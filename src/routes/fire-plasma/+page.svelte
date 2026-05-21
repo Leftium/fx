@@ -21,7 +21,7 @@
 
 	let minimalHeatThreshold = 0;
 
-	let fireMaths = [fireMathNull, fireMath, fireMathWide, fireMathSkinny];
+	let fireMaths = [fireMathNull, fireMath, fireMathWide, fireMathSkinny, fireMathTruncated];
 	let fireMathIndex = $state(1);
 
 	const colorPurple = makeColor(255, 0, 255);
@@ -93,6 +93,30 @@
 		total += getFire(heatPrev, x + 1, y + 4);
 
 		return total / 12.02;
+	}
+
+	// Kernel: compute next fire value at (x, y)
+	function fireMathTruncated(x: number, y: number, heatPrev: Float32Array) {
+		let total = 0;
+
+		total += getFire(heatPrev, x + 0, y - 1);
+
+		total += getFire(heatPrev, x - 1, y + 0);
+		total += getFire(heatPrev, x + 0, y + 0) * 2;
+		total += getFire(heatPrev, x + 1, y + 0);
+
+		total += getFire(heatPrev, x + 0, y + 1);
+
+		total += getFire(heatPrev, x - 1, y + 2);
+		total += getFire(heatPrev, x + 1, y + 2);
+
+		total += getFire(heatPrev, x + 0, y + 3);
+
+		total += getFire(heatPrev, x - 1, y + 4);
+		total += getFire(heatPrev, x + 0, y + 4);
+		total += getFire(heatPrev, x + 1, y + 4);
+
+		return (total / 12) | 0; // integer division
 	}
 
 	// Fire Kernal from: https://github.com/Leftium/fire/blob/41a6144234a7837767454e9669f4a3a6423431f2/src/main.cpp#L89-L100
