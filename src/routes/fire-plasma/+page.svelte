@@ -21,8 +21,14 @@
 
 	let minimalHeatThreshold = 0;
 
-	let fireMaths = [fireMathNull, fireMath, fireMathWide, fireMathSkinny, fireMathTruncated];
-	let fireMathIndex = $state(1);
+	let fireKernels = [
+		fireKernelNull,
+		fireKernel,
+		fireKernelWide,
+		fireKernelSkinny,
+		fireKernelTruncated
+	];
+	let fireKernelIndex = $state(1);
 
 	let fireSeeds = [seedFire, seedFireClamped, seedFireRandom];
 	let fireSeedIndex = $state(0);
@@ -46,12 +52,12 @@
 	}
 
 	// Null kernel.
-	function fireMathNull(x: number, y: number, heatPrev: Float32Array) {
+	function fireKernelNull(x: number, y: number, heatPrev: Float32Array) {
 		return getFire(heatPrev, x, y);
 	}
 
 	// Kernel: compute next fire value at (x, y)
-	function fireMath(x: number, y: number, heatPrev: Float32Array) {
+	function fireKernel(x: number, y: number, heatPrev: Float32Array) {
 		let total = 0;
 
 		total += getFire(heatPrev, x + 0, y - 1);
@@ -75,7 +81,7 @@
 	}
 
 	// Kernel: compute next fire value at (x, y)
-	function fireMathWide(x: number, y: number, heatPrev: Float32Array) {
+	function fireKernelWide(x: number, y: number, heatPrev: Float32Array) {
 		let total = 0;
 
 		total += getFire(heatPrev, x + 0, y - 1);
@@ -99,7 +105,7 @@
 	}
 
 	// Kernel: compute next fire value at (x, y)
-	function fireMathTruncated(x: number, y: number, heatPrev: Float32Array) {
+	function fireKernelTruncated(x: number, y: number, heatPrev: Float32Array) {
 		let total = 0;
 
 		total += getFire(heatPrev, x + 0, y - 1);
@@ -123,7 +129,7 @@
 	}
 
 	// Fire Kernal from: https://github.com/Leftium/fire/blob/41a6144234a7837767454e9669f4a3a6423431f2/src/main.cpp#L89-L100
-	function fireMathSkinny(x: number, y: number, heatPrev: Float32Array) {
+	function fireKernelSkinny(x: number, y: number, heatPrev: Float32Array) {
 		//return getFire(heatPrev, x, y);
 
 		let sum =
@@ -147,8 +153,8 @@
 
 		for (let y = bottomStart; y <= bottomEnd; y++) {
 			for (let x = padSides; x < heatWidth + padSides; x++) {
-				const idx = y * paddedWidth + x;
-				heatPrev[idx] = (Math.random() < 0.5 ? 505 : -145) / 256;
+				const index = y * paddedWidth + x;
+				heatPrev[index] = (Math.random() < 0.5 ? 505 : -145) / 256;
 			}
 		}
 	}
@@ -161,8 +167,8 @@
 
 		for (let y = bottomStart; y <= bottomEnd; y++) {
 			for (let x = padSides; x < heatWidth + padSides; x++) {
-				const idx = y * paddedWidth + x;
-				heatPrev[idx] = Math.random() < 0.73 ? 1 : 0;
+				const index = y * paddedWidth + x;
+				heatPrev[index] = Math.random() < 0.73 ? 1 : 0;
 			}
 		}
 	}
@@ -175,8 +181,8 @@
 
 		for (let y = bottomStart; y <= bottomEnd; y++) {
 			for (let x = padSides; x < heatWidth + padSides; x++) {
-				const idx = y * paddedWidth + x;
-				heatPrev[idx] = (Math.random() * 2000 - 825) / 256;
+				const index = y * paddedWidth + x;
+				heatPrev[index] = (Math.random() * 2000 - 825) / 256;
 			}
 		}
 	}
@@ -194,7 +200,7 @@
 
 			for (let x = padSides; x < heatWidth + padSides; x++) {
 				const index = y * paddedWidth + x;
-				const heatValue = fireMaths[fireMathIndex](x, y, heatPrev);
+				const heatValue = fireKernels[fireKernelIndex](x, y, heatPrev);
 				heatNext[index] = heatValue;
 
 				maxHeat = Math.max(maxHeat, heatValue);
@@ -208,7 +214,7 @@
 	}
 
 	function renderFire(
-		noise: Float32Array,
+		heatArray: Float32Array,
 		imageData: ImageData,
 		palette = paletteGray,
 		colorOver = colorWhite,
@@ -221,7 +227,7 @@
 		for (let y = padTop; y < heatHeight + padTop; y++) {
 			const rowStart = y * paddedWidth + padSides;
 			for (let x = 0; x < heatWidth; x++) {
-				const heat = (noise[rowStart + x] * palette.length) | 0;
+				const heat = (heatArray[rowStart + x] * palette.length) | 0;
 				data32[dst++] = heat >= palette.length ? colorOver : heat < 0 ? colorUnder : palette[heat];
 			}
 		}
@@ -231,11 +237,11 @@
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === '.') {
-			fireMathIndex = (fireMathIndex + 1) % fireMaths.length;
+			fireKernelIndex = (fireKernelIndex + 1) % fireKernels.length;
 		}
 
 		if (event.key === ',') {
-			fireMathIndex = (fireMathIndex - 1 + fireMaths.length) % fireMaths.length;
+			fireKernelIndex = (fireKernelIndex - 1 + fireKernels.length) % fireKernels.length;
 		}
 
 		if (event.key === ']') {
