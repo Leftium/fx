@@ -15,9 +15,6 @@ export type FxState = {
 	scalingFactor: number;
 	pixelAspectRatio: number;
 
-	dimensions: string;
-	infoString: string;
-
 	palettes: Uint32Array[];
 	paletteIndex: number;
 
@@ -60,6 +57,9 @@ export function makeFxHarness() {
 		lastLoop = thisLoop;
 	}
 
+	let dimensions = $state('WxH (WxH)');
+	let infoString = $state('info');
+
 	const fx = $state<FxState>({
 		paused: false,
 		infoHidden: false,
@@ -72,9 +72,6 @@ export function makeFxHarness() {
 
 		scalingFactor: 1,
 		pixelAspectRatio: 1,
-
-		dimensions: 'WxH (WxH)',
-		infoString: 'info',
 
 		palettes: [paletteGray],
 		paletteIndex: 1,
@@ -221,7 +218,7 @@ export function makeFxHarness() {
 				container.style.width = `${canvasWidth}px`;
 				container.style.height = `${canvasHeight}px`;
 
-				fx.dimensions = `${canvasWidth}x${canvasHeight} (${canvas.width}x${canvas.height})`;
+				dimensions = `${canvasWidth}x${canvasHeight} (${canvas.width}x${canvas.height})`;
 
 				/*
 				console.log(
@@ -258,9 +255,9 @@ export function makeFxHarness() {
 				const fps = 1000 / frameTime;
 				const fpsPercentage = (fps * 100) / 250;
 
-				fx.infoString = `
+				infoString = `
 					${fps.toFixed(0)}FPS ${frameTime === 2222 ? '0' : frameTime.toFixed(1)}ms (${fpsPercentage.toFixed(0)}%)
-					${fx.dimensions}
+					${dimensions}
 					Palette: ${fx.paletteIndex} Range: ${fx.low}-${fx.high}`;
 			}
 			setTimeout(renderInfo);
@@ -303,6 +300,7 @@ export function makeFxHarness() {
 
 	return {
 		fx,
-		fxHarness
+		fxHarness,
+		getInfoString: () => infoString
 	};
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { makeFxHarness, type FxState } from './fx-harness.svelte';
 
-	const { fx, fxHarness } = makeFxHarness();
+	const { fx, fxHarness, getInfoString } = makeFxHarness();
 
 	interface Props {
 		oninit?: (fx: FxState) => void;
@@ -28,7 +28,7 @@
 		<div class="crt-overlay" hidden={!fx.crtScanlines}></div>
 		<div class="info" hidden={fx.infoHidden}>
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html fx.infoString.substring(1).replaceAll('\n', '<br>')}
+			{@html getInfoString().substring(1).replaceAll('\n', '<br>')}
 		</div>
 	</wrap-effect>
 </graphical-effect>
