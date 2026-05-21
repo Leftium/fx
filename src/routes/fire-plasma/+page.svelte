@@ -24,6 +24,9 @@
 	let fireMaths = [fireMathNull, fireMath, fireMathWide, fireMathSkinny, fireMathTruncated];
 	let fireMathIndex = $state(1);
 
+	let fireSeeds = [seedFire, seedFireClamped, seedFireRandom];
+	let fireSeedIndex = $state(0);
+
 	const colorPurple = makeColor(255, 0, 255);
 	const colorGreen = makeColor(0, 255, 0);
 	const colorBlack = makeColor(0, 0, 0);
@@ -136,12 +139,7 @@
 		return sum / 8.02;
 	}
 
-	// Advance one frame: compute nextFire from prevFire
-	function stepFire() {
-		//console.log('stepFire');
-
-		[heatPrev, heatNext] = [heatNext, heatPrev];
-
+	function seedFire(heatPrev: Float32Array<ArrayBuffer>) {
 		// Add heat to bottom rows (fuel source)
 		const heatRows = 6;
 		const bottomStart = heatHeight + padTop - heatRows;
@@ -153,6 +151,43 @@
 				heatPrev[idx] = Math.random() < 0.5 ? 505 : -145;
 			}
 		}
+	}
+
+	function seedFireClamped(heatPrev: Float32Array<ArrayBuffer>) {
+		// Add heat to bottom rows (fuel source)
+		const heatRows = 6;
+		const bottomStart = heatHeight + padTop - heatRows;
+		const bottomEnd = heatHeight + padTop;
+
+		for (let y = bottomStart; y <= bottomEnd; y++) {
+			for (let x = padSides; x < heatWidth + padSides; x++) {
+				const idx = y * paddedWidth + x;
+				heatPrev[idx] = Math.random() < 0.73 ? 255 : 0;
+			}
+		}
+	}
+
+	function seedFireRandom(heatPrev: Float32Array<ArrayBuffer>) {
+		// Add heat to bottom rows (fuel source)
+		const heatRows = 6;
+		const bottomStart = heatHeight + padTop - heatRows;
+		const bottomEnd = heatHeight + padTop;
+
+		for (let y = bottomStart; y <= bottomEnd; y++) {
+			for (let x = padSides; x < heatWidth + padSides; x++) {
+				const idx = y * paddedWidth + x;
+				heatPrev[idx] = Math.random() * 400;
+			}
+		}
+	}
+
+	// Advance one frame: compute nextFire from prevFire
+	function stepFire() {
+		//console.log('stepFire');
+
+		[heatPrev, heatNext] = [heatNext, heatPrev];
+
+		fireSeeds[fireSeedIndex](heatPrev);
 
 		for (let y = heatHeight; y > 0; y--) {
 			let maxHeat = 0;
@@ -201,6 +236,14 @@
 
 		if (event.key === ',') {
 			fireMathIndex = (fireMathIndex - 1 + fireMaths.length) % fireMaths.length;
+		}
+
+		if (event.key === '[') {
+			fireSeedIndex = (fireSeedIndex + 1) % fireSeeds.length;
+		}
+
+		if (event.key === ']') {
+			fireSeedIndex = (fireSeedIndex - 1 + fireSeeds.length) % fireSeeds.length;
 		}
 	}
 
