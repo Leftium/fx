@@ -238,11 +238,11 @@
 			fireMathIndex = (fireMathIndex - 1 + fireMaths.length) % fireMaths.length;
 		}
 
-		if (event.key === '[') {
+		if (event.key === ']') {
 			fireSeedIndex = (fireSeedIndex + 1) % fireSeeds.length;
 		}
 
-		if (event.key === ']') {
+		if (event.key === '[') {
 			fireSeedIndex = (fireSeedIndex - 1 + fireSeeds.length) % fireSeeds.length;
 		}
 	}
