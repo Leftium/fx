@@ -26,7 +26,7 @@ type FxHarnessOptions = {
 	initHandler?: (fx: FxState) => void;
 	updateHandler?: (fx: FxState) => void;
 	renderHandler: (fx: FxState) => ImageData;
-	resizeHandler?: (fx: FxState, width: number, height: number) => void;
+	resizeHandler?: (fx: FxState, width: number, height: number, isSameSize?: boolean) => void;
 	infoHandler?: (infoString: string) => string;
 };
 
@@ -189,7 +189,10 @@ export function makeFxHarness() {
 					fx.low = Math.min(fx.low, fx.high);
 				}
 				fx.palettes[0] = makePaletteGraySlice(fx.low, fx.high);
-				internalResize(fx);
+				if (resizeHandler) {
+					resizeHandler(fx, canvas.width, canvas.height, true);
+				}
+				internalRender(fx);
 				renderInfo();
 			}
 

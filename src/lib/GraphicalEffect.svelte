@@ -6,7 +6,7 @@
 	interface Props {
 		oninit?: (fx: FxState) => void;
 		onupdate?: (fx: FxState) => void;
-		onresize?: (fx: FxState, width: number, height: number) => void;
+		onresize?: (fx: FxState, width: number, height: number, isSameSize?: boolean) => void;
 		onrender: (fx: FxState) => ImageData;
 		oninfo?: (info: string) => string;
 		style?: string;

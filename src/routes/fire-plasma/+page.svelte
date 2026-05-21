@@ -207,7 +207,9 @@
 			}
 
 			if (maxHeat < minimalHeatThreshold) {
-				//console.log('break:', {y})
+				//console.log('break:', { y });
+				// Fill the rest of heatNext efficiently
+				heatNext.fill(minimalHeatThreshold, 0, (y - 1) * paddedWidth);
 				break;
 			}
 		}
@@ -294,16 +296,8 @@
 			fx.low = 140;
 			fx.high = 140;
 		}}
-		onresize={(fx, width, height) => {
+		onresize={(fx, width, height, isSameSize) => {
 			console.log('resizeHandler', { width, height });
-			imageData = createOpaqueImageData(width, height);
-
-			heatWidth = width;
-			heatHeight = height;
-
-			heatPrev = createFireBuffer(width, height);
-			heatNext = createFireBuffer(width, height);
-
 			switch (fx.paletteIndex) {
 				case 1:
 				case 2:
@@ -316,9 +310,20 @@
 				default:
 					minimalHeatThreshold = 0;
 			}
-			heatPrev.fill(minimalHeatThreshold); // Invisible background heat.
-			heatNext.fill(minimalHeatThreshold); // Invisible background heat.
-			//console.log('resize', { maxHeatThreshold });
+
+			if (!isSameSize) {
+				imageData = createOpaqueImageData(width, height);
+
+				heatWidth = width;
+				heatHeight = height;
+
+				heatPrev = createFireBuffer(width, height);
+				heatNext = createFireBuffer(width, height);
+
+				heatPrev.fill(minimalHeatThreshold); // Invisible background heat.
+				heatNext.fill(minimalHeatThreshold); // Invisible background heat.
+				//console.log('resize', { maxHeatThreshold });
+			}
 		}}
 		onupdate={() => {
 			//console.log('onupdate')
