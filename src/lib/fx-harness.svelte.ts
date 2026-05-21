@@ -27,6 +27,7 @@ type FxHarnessOptions = {
 	updateHandler?: (fx: FxState) => void;
 	renderHandler: (fx: FxState) => ImageData;
 	resizeHandler?: (fx: FxState, width: number, height: number) => void;
+	infoHandler?: (infoString: string) => string;
 };
 
 export function createOpaqueImageData(width: number, height: number) {
@@ -84,7 +85,8 @@ export function makeFxHarness() {
 		initHandler,
 		updateHandler,
 		renderHandler,
-		resizeHandler
+		resizeHandler,
+		infoHandler
 	}: FxHarnessOptions): Attachment {
 		return (element) => {
 			console.log('attaching');
@@ -255,10 +257,13 @@ export function makeFxHarness() {
 				const fps = 1000 / frameTime;
 				const fpsPercentage = (fps * 100) / 250;
 
-				infoString = `
-					${fps.toFixed(0)}FPS ${frameTime === 2222 ? '0' : frameTime.toFixed(1)}ms (${fpsPercentage.toFixed(0)}%)
+				infoString = `${fps.toFixed(0)}FPS ${frameTime === 2222 ? '0' : frameTime.toFixed(1)}ms (${fpsPercentage.toFixed(0)}%)
 					${dimensions}
 					Palette: ${fx.paletteIndex} Range: ${fx.low}-${fx.high}`;
+
+				if (infoHandler) {
+					infoString = infoHandler(infoString);
+				}
 			}
 			setTimeout(renderInfo);
 

@@ -8,6 +8,7 @@
 		onupdate?: (fx: FxState) => void;
 		onresize?: (fx: FxState, width: number, height: number) => void;
 		onrender: (fx: FxState) => ImageData;
+		oninfo?: (info: string) => string;
 		style?: string;
 	}
 
@@ -16,19 +17,20 @@
 		onupdate: updateHandler,
 		onrender: renderHandler,
 		onresize: resizeHandler,
+		oninfo: infoHandler,
 		style = 'width: 100%; height: 100%'
 	}: Props = $props();
 </script>
 
 <graphical-effect
-	{@attach fxHarness({ initHandler, updateHandler, renderHandler, resizeHandler })}
+	{@attach fxHarness({ initHandler, updateHandler, renderHandler, resizeHandler, infoHandler })}
 	{style}
 >
 	<wrap-effect>
 		<div class="crt-overlay" hidden={!fx.crtScanlines}></div>
 		<div class="info" hidden={fx.infoHidden}>
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html getInfoString().substring(1).replaceAll('\n', '<br>')}
+			{@html getInfoString().replaceAll('\n', '<br>')}
 		</div>
 	</wrap-effect>
 </graphical-effect>

@@ -340,6 +340,10 @@
 				colorUnder
 			);
 		}}
+		oninfo={(info) => {
+			return `${info}
+			Seed: ${fireSeedIndex} Kernel: ${fireKernelIndex}`;
+		}}
 	></GraphicalEffect>
 </main>
 
