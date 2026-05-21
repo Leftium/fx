@@ -24,8 +24,10 @@
 	let fireMaths = [fireMathNull, fireMath, fireMathWide, fireMathSkinny];
 	let fireMathIndex = $state(1);
 
-	const colorOver = makeColor(255, 0, 255); // Purple.
-	const colorUnder = makeColor(0, 255, 0); // Green.
+	const colorPurple = makeColor(255, 0, 255);
+	const colorGreen = makeColor(0, 255, 0);
+	const colorBlack = makeColor(0, 0, 0);
+	const colorWhite = makeColor(255, 255, 255);
 
 	// Utility: create fire buffer with padding
 	function createFireBuffer(width: number, height: number) {
@@ -146,7 +148,13 @@
 		}
 	}
 
-	export function renderFire(noise: Float32Array, imageData: ImageData, palette = paletteGray) {
+	function renderFire(
+		noise: Float32Array,
+		imageData: ImageData,
+		palette = paletteGray,
+		colorOver = colorWhite,
+		colorUnder = colorBlack
+	) {
 		const data32 = new Uint32Array(imageData.data.buffer);
 		const paddedWidth = heatWidth + padSides * 2;
 
@@ -236,10 +244,18 @@
 		}}
 		onrender={(fx) => {
 			//stepFire()
+
+			const [colorOver, colorUnder] =
+				fx.paletteIndex === 1 || fx.paletteIndex === 2
+					? [colorWhite, colorBlack]
+					: [colorPurple, colorGreen];
+
 			return renderFire(
 				heatNext,
 				imageData,
-				fx.palettes[fx.paletteIndex] as Uint32Array<ArrayBuffer>
+				fx.palettes[fx.paletteIndex] as Uint32Array<ArrayBuffer>,
+				colorOver,
+				colorUnder
 			);
 		}}
 	></GraphicalEffect>
