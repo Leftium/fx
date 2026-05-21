@@ -228,7 +228,7 @@
 			const rowStart = y * paddedWidth + padSides;
 			for (let x = 0; x < heatWidth; x++) {
 				const heat = (heatArray[rowStart + x] * palette.length) | 0;
-				data32[dst++] = heat >= palette.length ? colorOver : heat < 0 ? colorUnder : palette[heat];
+				data32[dst++] = heat > palette.length ? colorOver : heat < 0 ? colorUnder : palette[heat];
 			}
 		}
 
