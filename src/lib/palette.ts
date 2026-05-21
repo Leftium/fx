@@ -1,6 +1,6 @@
 export function makeColor(r: number, g: number, b: number, a = 255) {
 	// ABGR packing
-	return (a << 24) | (b << 16) | (g << 8) | r;
+	return ((a | 0) << 24) | ((b | 0) << 16) | ((g | 0) << 8) | (r | 0);
 }
 
 export function makePalette(calcColor: (i: number) => number) {
@@ -86,8 +86,74 @@ export function makeFirePalette(options: { blue?: boolean; extended?: boolean } 
 	}
 
 	if (options.blue) {
-		// Use blue channel to track fire intensitiy value.
+		// Use blue channel to track fire intensity value.
 		palette = palette.map((value, index) => value | (index << 16));
+	}
+
+	return palette;
+}
+
+export function makeFirePalette2048(options: { blue?: boolean; extended?: boolean } = {}) {
+	options = {
+		blue: false,
+		extended: false,
+		...options
+	};
+
+	let r = 0,
+		g = 0,
+		b = 0;
+
+	let palette = new Uint32Array(2048);
+	palette.fill(makeColor(r, g, b));
+
+	let i = 2048;
+	r = b = g = 255;
+
+	while (i > 1792) {
+		palette[i] = makeColor(r, g, b);
+		///console.log('A', { i, r, g, b });
+		i--;
+	}
+
+	b++;
+	while (b > 0) {
+		b -= 1;
+		palette[i] = makeColor(r, g, b);
+		///console.log('A', { i, r, g, b });
+		i--;
+	}
+
+	g++;
+	while (g > 128) {
+		g -= 0.5;
+		if (!options.extended) {
+			g -= 0.5;
+		}
+
+		palette[i] = makeColor(r, g, b);
+		///console.log('B', { i, r, g, b });
+		i--;
+	}
+
+	r++;
+	while (g > 0) {
+		r -= 1;
+		g -= 0.5;
+
+		if (!options.extended) {
+			r -= 1;
+			g -= 0.5;
+		}
+
+		palette[i] = makeColor(r, g, b);
+		///console.log('C', { i, r, g, b });
+		i--;
+	}
+
+	if (options.blue) {
+		// Use blue channel to track fire intensity value.
+		palette = palette.map((value, index) => value | (((index / 8) | 0) << 16));
 	}
 
 	return palette;

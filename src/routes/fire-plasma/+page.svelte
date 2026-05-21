@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createOpaqueImageData, type FxState } from '$lib/fx-harness.svelte';
 	import GraphicalEffect from '$lib/GraphicalEffect.svelte';
-	import { makeColor, makeFirePalette, paletteGray } from '$lib/palette';
+	import { makeColor, makeFirePalette, makeFirePalette2048, paletteGray } from '$lib/palette';
 	import { onMount } from 'svelte';
 
 	let imageData: ImageData;
@@ -119,7 +119,7 @@
 		total += getFire(heatPrev, x + 0, y + 4);
 		total += getFire(heatPrev, x + 1, y + 4);
 
-		return (total / 12) | 0; // integer division
+		return (((256 * total) / 12) | 0) / 256; // integer division
 	}
 
 	// Fire Kernal from: https://github.com/Leftium/fire/blob/41a6144234a7837767454e9669f4a3a6423431f2/src/main.cpp#L89-L100
@@ -148,7 +148,7 @@
 		for (let y = bottomStart; y <= bottomEnd; y++) {
 			for (let x = padSides; x < heatWidth + padSides; x++) {
 				const idx = y * paddedWidth + x;
-				heatPrev[idx] = Math.random() < 0.5 ? 505 : -145;
+				heatPrev[idx] = (Math.random() < 0.5 ? 505 : -145) / 256;
 			}
 		}
 	}
@@ -162,7 +162,7 @@
 		for (let y = bottomStart; y <= bottomEnd; y++) {
 			for (let x = padSides; x < heatWidth + padSides; x++) {
 				const idx = y * paddedWidth + x;
-				heatPrev[idx] = Math.random() < 0.73 ? 255 : 0;
+				heatPrev[idx] = Math.random() < 0.73 ? 1 : 0;
 			}
 		}
 	}
@@ -176,7 +176,7 @@
 		for (let y = bottomStart; y <= bottomEnd; y++) {
 			for (let x = padSides; x < heatWidth + padSides; x++) {
 				const idx = y * paddedWidth + x;
-				heatPrev[idx] = Math.random() * 400;
+				heatPrev[idx] = (Math.random() * 2000 - 825) / 256;
 			}
 		}
 	}
@@ -221,8 +221,8 @@
 		for (let y = padTop; y < heatHeight + padTop; y++) {
 			const rowStart = y * paddedWidth + padSides;
 			for (let x = 0; x < heatWidth; x++) {
-				const heat = noise[rowStart + x] | 0;
-				data32[dst++] = heat > 255 ? colorOver : heat < 0 ? colorUnder : palette[heat];
+				const heat = (noise[rowStart + x] * palette.length) | 0;
+				data32[dst++] = heat >= palette.length ? colorOver : heat < 0 ? colorUnder : palette[heat];
 			}
 		}
 
@@ -273,9 +273,16 @@
 
 			//fx.paused = true;
 
+			fx.palettes.push(makeFirePalette2048());
 			fx.palettes.push(makeFirePalette());
+
+			fx.palettes.push(makeFirePalette2048({ extended: true }));
 			fx.palettes.push(makeFirePalette({ extended: true }));
+
+			fx.palettes.push(makeFirePalette2048({ blue: true }));
 			fx.palettes.push(makeFirePalette({ blue: true }));
+
+			fx.palettes.push(makeFirePalette2048({ extended: true, blue: true }));
 			fx.palettes.push(makeFirePalette({ extended: true, blue: true }));
 
 			fx.low = 140;
@@ -293,10 +300,12 @@
 
 			switch (fx.paletteIndex) {
 				case 1:
-					minimalHeatThreshold = 140;
-					break;
 				case 2:
-					minimalHeatThreshold = 120;
+					minimalHeatThreshold = 140 / 256;
+					break;
+				case 3:
+				case 4:
+					minimalHeatThreshold = 120 / 256;
 					break;
 				default:
 					minimalHeatThreshold = 0;
@@ -313,7 +322,7 @@
 			//stepFire()
 
 			const [colorOver, colorUnder] =
-				fx.paletteIndex === 1 || fx.paletteIndex === 2
+				fx.paletteIndex >= 1 && fx.paletteIndex <= 4
 					? [colorWhite, colorBlack]
 					: [colorPurple, colorGreen];
 
