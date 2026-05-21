@@ -259,11 +259,9 @@ export function makeFxHarness() {
 				const fpsPercentage = (fps * 100) / 250;
 
 				fx.infoString = `
-					${fps.toFixed(0)} FPS (${fpsPercentage.toFixed(0)}%)
-					${frameTime === 2222 ? '0' : frameTime.toFixed(1)}ms
+					${fps.toFixed(0)}FPS ${frameTime === 2222 ? '0' : frameTime.toFixed(1)}ms (${fpsPercentage.toFixed(0)}%)
 					${fx.dimensions}
-					Palette: ${fx.paletteIndex};
-					Range: ${fx.low}-${fx.high}`;
+					Palette: ${fx.paletteIndex} Range: ${fx.low}-${fx.high}`;
 			}
 			setTimeout(renderInfo);
 

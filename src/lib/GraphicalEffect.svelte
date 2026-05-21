@@ -62,7 +62,7 @@
 	.info {
 		position: absolute;
 		top: 8px;
-		right: 8px;
+		left: 8px;
 		padding: 8px;
 		border-radius: 8px;
 		color: rgba(255, 255, 255, 0.8);
