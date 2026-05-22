@@ -30,7 +30,7 @@
 	];
 	let fireKernelIndex = $state(1);
 
-	let fireSeeds = [seedFire, seedFireClamped, seedFireRandom];
+	let fireSeeds = [seedFire, seedFireClamped, seedFireRandom, seedFireSin, seedFireSinRandom];
 	let fireSeedIndex = $state(0);
 
 	const colorPurple = makeColor(255, 0, 255);
@@ -159,6 +159,57 @@
 		}
 	}
 
+	let count = 0;
+	function seedFireSin(heatPrev: Float32Array<ArrayBuffer>) {
+		// Add heat to bottom rows (fuel source)
+
+		count++;
+		//if (count % 3 !== 0) return;
+
+		const bottom = heatHeight + padTop - 40;
+		for (let x = padSides; x < heatWidth + padSides; x++) {
+			const deltaBottom = (20 * Math.sin(((count / 7) * Math.PI) / 180)) | 0;
+			const height = 20 * Math.sin(((count / 5) * Math.PI) / 180);
+			const deltaY = (Math.sin(((x + (count / 23) * Math.PI) / 180) * 7) * height) | 0;
+			const index = (bottom + deltaBottom + deltaY) * paddedWidth + x;
+			heatPrev[index] += 0.22;
+		}
+
+		// /*
+		for (let x = padSides; x < heatWidth + padSides; x++) {
+			const height = 20 * Math.sin((count * Math.PI) / 180);
+			const deltaY = (Math.sin(((x - (count / 17) * Math.PI) / 180) * 5) * height) | 0;
+			const index = (bottom + deltaY) * paddedWidth + x;
+			heatPrev[index] += 0.22;
+		}
+		/**/
+	}
+
+	function seedFireSinRandom(heatPrev: Float32Array<ArrayBuffer>) {
+		// Add heat to bottom rows (fuel source)
+
+		count++;
+		//if (count % 3 !== 0) return;
+
+		const bottom = heatHeight + padTop - 40;
+		for (let x = padSides; x < heatWidth + padSides; x++) {
+			const deltaBottom = (20 * Math.sin(((count / 7) * Math.PI) / 180)) | 0;
+			const height = 20 * Math.sin(((count / 5) * Math.PI) / 180);
+			const deltaY = (Math.sin(((x + (count / 23) * Math.PI) / 180) * 7) * height) | 0;
+			const index = (bottom + deltaBottom + deltaY) * paddedWidth + x;
+			heatPrev[index] += (Math.random() < 0.5 ? 505 : -145) / 256 / 4;
+		}
+
+		// /*
+		for (let x = padSides; x < heatWidth + padSides; x++) {
+			const height = 20 * Math.sin((count * Math.PI) / 180);
+			const deltaY = (Math.sin(((x - (count / 17) * Math.PI) / 180) * 5) * height) | 0;
+			const index = (bottom + deltaY) * paddedWidth + x;
+			heatPrev[index] += (Math.random() < 0.5 ? 505 : -145) / 256 / 4;
+		}
+		/**/
+	}
+
 	function seedFireClamped(heatPrev: Float32Array<ArrayBuffer>) {
 		// Add heat to bottom rows (fuel source)
 		const heatRows = 6;
@@ -206,7 +257,7 @@
 				maxHeat = Math.max(maxHeat, heatValue);
 			}
 
-			if (maxHeat < minimalHeatThreshold) {
+			if (y < 100 && maxHeat < minimalHeatThreshold) {
 				//console.log('break:', { y });
 				// Fill the rest of heatNext efficiently
 				heatNext.fill(minimalHeatThreshold, 0, (y - 1) * paddedWidth);
