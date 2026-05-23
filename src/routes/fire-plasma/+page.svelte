@@ -2,7 +2,11 @@
 	import { createOpaqueImageData, type FxState } from '$lib/fx-harness.svelte';
 	import GraphicalEffect from '$lib/GraphicalEffect.svelte';
 	import { makeColor, makeFirePalette, makeFirePalette2048, paletteGray } from '$lib/palette';
-	import { onMount } from 'svelte';
+
+	type FxFire = {
+		fireSeedIndex: number;
+		fireKernelIndex: number;
+	};
 
 	let imageData: ImageData;
 
@@ -28,7 +32,6 @@
 		fireKernelSkinny,
 		fireKernelTruncated
 	];
-	let fireKernelIndex = $state(1);
 
 	let fireSeeds = [
 		seedFireDefault,
@@ -37,7 +40,6 @@
 		seedFireSin,
 		seedFireSinRandom
 	];
-	let fireSeedIndex = $state(0);
 
 	const colorPurple = makeColor(255, 0, 255);
 	const colorGreen = makeColor(0, 255, 0);
@@ -245,19 +247,19 @@
 	}
 
 	// Advance one frame: compute nextFire from prevFire
-	function stepFire() {
+	function stepFire(fx: FxState) {
 		//console.log('stepFire');
 
 		[heatPrev, heatNext] = [heatNext, heatPrev];
 
-		fireSeeds[fireSeedIndex](heatPrev);
+		fireSeeds[(fx as FxState<FxFire>).fireSeedIndex](heatPrev);
 
 		for (let y = heatHeight; y > 0; y--) {
 			let maxHeat = 0;
 
 			for (let x = padSides; x < heatWidth + padSides; x++) {
 				const index = y * paddedWidth + x;
-				const heatValue = fireKernels[fireKernelIndex](x, y, heatPrev);
+				const heatValue = fireKernels[(fx as FxState<FxFire>).fireKernelIndex](x, y, heatPrev);
 				heatNext[index] = heatValue;
 
 				maxHeat = Math.max(maxHeat, heatValue);
@@ -293,41 +295,13 @@
 
 		return imageData;
 	}
-
-	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === '.') {
-			fireKernelIndex = (fireKernelIndex + 1) % fireKernels.length;
-		}
-
-		if (event.key === ',') {
-			fireKernelIndex = (fireKernelIndex - 1 + fireKernels.length) % fireKernels.length;
-		}
-
-		if (event.key === ']') {
-			fireSeedIndex = (fireSeedIndex + 1) % fireSeeds.length;
-		}
-
-		if (event.key === '[') {
-			fireSeedIndex = (fireSeedIndex - 1 + fireSeeds.length) % fireSeeds.length;
-		}
-	}
-
-	onMount(() => {
-		const abortController = new AbortController();
-		const { signal } = abortController;
-
-		window.addEventListener('keydown', handleKeydown, { signal });
-
-		return () => {
-			// Clean up
-			abortController.abort();
-		};
-	});
 </script>
 
 <main>
 	<GraphicalEffect
-		oninit={(fx: FxState) => {
+		oninit={(fxBase) => {
+			const fx = fxBase as FxState<FxFire>;
+
 			fx.standardSize = true;
 			fx.standardWidth = 500;
 			fx.standardHeight = 800;
@@ -352,6 +326,9 @@
 
 			fx.low = 140;
 			fx.high = 140;
+
+			fx.fireSeedIndex = 0;
+			fx.fireKernelIndex = 1;
 		}}
 		onresize={(fx, width, height, isSameSize) => {
 			console.log('resizeHandler', { width, height });
@@ -382,9 +359,9 @@
 				//console.log('resize', { maxHeatThreshold });
 			}
 		}}
-		onupdate={() => {
+		onupdate={(fx) => {
 			//console.log('onupdate')
-			stepFire();
+			stepFire(fx);
 		}}
 		onrender={(fx) => {
 			//stepFire()
@@ -396,10 +373,29 @@
 
 			return renderFire(heatNext, imageData, fx.palettes[fx.paletteIndex], colorOver, colorUnder);
 		}}
-		oninfo={(info) => {
+		oninfo={(fxBase, info) => {
+			const fx = fxBase as FxState<FxFire>;
 			return `${info}
-			Seed: ${fireSeedIndex} ${fireSeeds[fireSeedIndex].name.replace('seedFire', '')}
-			Kernel: ${fireKernelIndex} ${fireKernels[fireKernelIndex].name.replace('fireKernel', '')}`;
+			Seed: ${fx.fireSeedIndex} ${fireSeeds[fx.fireSeedIndex].name.replace('seedFire', '')}
+			Kernel: ${fx.fireKernelIndex} ${fireKernels[fx.fireKernelIndex].name.replace('fireKernel', '')}`;
+		}}
+		onkeydown={(fxBase, event) => {
+			const fx = fxBase as FxState<FxFire>;
+			if (event.key === '.') {
+				fx.fireKernelIndex = (fx.fireKernelIndex + 1) % fireKernels.length;
+			}
+
+			if (event.key === ',') {
+				fx.fireKernelIndex = (fx.fireKernelIndex - 1 + fireKernels.length) % fireKernels.length;
+			}
+
+			if (event.key === ']') {
+				fx.fireSeedIndex = (fx.fireSeedIndex + 1) % fireSeeds.length;
+			}
+
+			if (event.key === '[') {
+				fx.fireSeedIndex = (fx.fireSeedIndex - 1 + fireSeeds.length) % fireSeeds.length;
+			}
 		}}
 	></GraphicalEffect>
 </main>

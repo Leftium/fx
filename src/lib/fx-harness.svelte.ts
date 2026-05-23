@@ -2,7 +2,8 @@ import { untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 import { makePaletteGraySlice, type Palette } from '$lib/palette';
 
-export type FxState = {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export type FxState<Extra extends Record<string, boolean | number> = {}> = {
 	paused: boolean;
 	infoHidden: boolean;
 	active: boolean;
@@ -20,14 +21,15 @@ export type FxState = {
 
 	low: number;
 	high: number;
-};
+} & Extra;
 
 type FxHarnessOptions = {
 	initHandler?: (fx: FxState) => void;
 	updateHandler?: (fx: FxState) => void;
 	renderHandler: (fx: FxState) => ImageData;
 	resizeHandler?: (fx: FxState, width: number, height: number, isSameSize?: boolean) => void;
-	infoHandler?: (infoString: string) => string;
+	infoHandler?: (fx: FxState, infoString: string) => string;
+	keydownHandler?: (fx: FxState, event: KeyboardEvent) => void;
 };
 
 export function createOpaqueImageData(width: number, height: number) {
@@ -40,7 +42,7 @@ export function createOpaqueImageData(width: number, height: number) {
 	return imageData;
 }
 
-export function makeFxHarness() {
+export function makeFxHarness(searchParams: URLSearchParams) {
 	// Frame counter based on: https://stackoverflow.com/a/5111475
 	// The higher this value, the less the fps will reflect temporary variations
 	// A value of 1 will only keep the last value
@@ -86,7 +88,8 @@ export function makeFxHarness() {
 		updateHandler,
 		renderHandler,
 		resizeHandler,
-		infoHandler
+		infoHandler,
+		keydownHandler
 	}: FxHarnessOptions): Attachment {
 		return (element) => {
 			console.log('attaching');
@@ -191,6 +194,10 @@ export function makeFxHarness() {
 				if (resizeHandler) {
 					resizeHandler(fx, canvas.width, canvas.height, true);
 				}
+
+				if (keydownHandler) {
+					keydownHandler(fx, event);
+				}
 				internalRender(fx);
 				renderInfo();
 			}
@@ -252,8 +259,32 @@ export function makeFxHarness() {
 				fx.palettes[0] = makePaletteGraySlice(fx.low, fx.high);
 				fx.paletteIndex = Math.min(fx.paletteIndex, fx.palettes.length - 1);
 
+				// Todo: apply URL params to fx state.
+
+				for (const name of Object.keys(fx) as (keyof FxState)[]) {
+					const paramValue = searchParams.get(name);
+					if (paramValue !== null) {
+						setParam(fx, name, paramValue);
+					}
+				}
+
 				internalResize(fx);
 			});
+
+			// Utility function to set fx fields in type-safe way.
+			function setParam<K extends keyof FxState>(fx: FxState, key: K, value: string) {
+				const numValue = Number(value);
+				const current = fx[key];
+
+				if (typeof current === 'boolean') {
+					fx[key] = (value.toLowerCase() === 'true' || value === '1') as FxState[K];
+				} else if (typeof current === 'number') {
+					if (Number.isFinite(numValue)) {
+						fx[key] = numValue as FxState[K];
+					}
+				}
+				// skip arrays like palettes
+			}
 
 			function renderInfo() {
 				const fps = 1000 / frameTime;
@@ -264,7 +295,7 @@ export function makeFxHarness() {
 					Palette: ${fx.paletteIndex} ${fx.palettes[fx.paletteIndex].description}`;
 
 				if (infoHandler) {
-					infoString = infoHandler(infoString);
+					infoString = infoHandler(fx, infoString);
 				}
 			}
 			setTimeout(renderInfo);

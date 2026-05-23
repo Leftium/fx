@@ -1,15 +1,17 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { makeFxHarness, type FxState } from './fx-harness.svelte';
 
-	const { fx, fxHarness, getInfoString } = makeFxHarness();
+	const { fx, fxHarness, getInfoString } = makeFxHarness(page.url.searchParams);
 
 	interface Props {
 		oninit?: (fx: FxState) => void;
 		onupdate?: (fx: FxState) => void;
 		onresize?: (fx: FxState, width: number, height: number, isSameSize?: boolean) => void;
 		onrender: (fx: FxState) => ImageData;
-		oninfo?: (info: string) => string;
+		oninfo?: (fx: FxState, info: string) => string;
 		style?: string;
+		onkeydown?: (fx: FxState, event: KeyboardEvent) => void;
 	}
 
 	const {
@@ -18,12 +20,20 @@
 		onrender: renderHandler,
 		onresize: resizeHandler,
 		oninfo: infoHandler,
+		onkeydown: keydownHandler,
 		style = 'width: 100%; height: 100%'
 	}: Props = $props();
 </script>
 
 <graphical-effect
-	{@attach fxHarness({ initHandler, updateHandler, renderHandler, resizeHandler, infoHandler })}
+	{@attach fxHarness({
+		initHandler,
+		updateHandler,
+		renderHandler,
+		resizeHandler,
+		infoHandler,
+		keydownHandler
+	})}
 	{style}
 >
 	<wrap-effect>
