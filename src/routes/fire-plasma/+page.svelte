@@ -23,14 +23,20 @@
 
 	let fireKernels = [
 		fireKernelNull,
-		fireKernel,
+		fireKernelDefault,
 		fireKernelWide,
 		fireKernelSkinny,
 		fireKernelTruncated
 	];
 	let fireKernelIndex = $state(1);
 
-	let fireSeeds = [seedFire, seedFireClamped, seedFireRandom, seedFireSin, seedFireSinRandom];
+	let fireSeeds = [
+		seedFireDefault,
+		seedFireClamped,
+		seedFireRandom,
+		seedFireSin,
+		seedFireSinRandom
+	];
 	let fireSeedIndex = $state(0);
 
 	const colorPurple = makeColor(255, 0, 255);
@@ -57,7 +63,7 @@
 	}
 
 	// Kernel: compute next fire value at (x, y)
-	function fireKernel(x: number, y: number, heatPrev: Float32Array) {
+	function fireKernelDefault(x: number, y: number, heatPrev: Float32Array) {
 		let total = 0;
 
 		total += getFire(heatPrev, x + 0, y - 1);
@@ -145,7 +151,7 @@
 		return sum / 8.02;
 	}
 
-	function seedFire(heatPrev: Float32Array<ArrayBuffer>) {
+	function seedFireDefault(heatPrev: Float32Array<ArrayBuffer>) {
 		// Add heat to bottom rows (fuel source)
 		const heatRows = 6;
 		const bottomStart = heatHeight + padTop - heatRows;
@@ -392,7 +398,8 @@
 		}}
 		oninfo={(info) => {
 			return `${info}
-			Seed: ${fireSeedIndex} Kernel: ${fireKernelIndex}`;
+			Seed: ${fireSeedIndex} ${fireSeeds[fireSeedIndex].name.replace('seedFire', '')}
+			Kernel: ${fireKernelIndex} ${fireKernels[fireKernelIndex].name.replace('fireKernel', '')}`;
 		}}
 	></GraphicalEffect>
 </main>
