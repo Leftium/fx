@@ -1,13 +1,24 @@
+export interface Palette extends Uint32Array {
+	description: string;
+}
+
 export function makeColor(r: number, g: number, b: number, a = 255) {
 	// ABGR packing
 	return ((a | 0) << 24) | ((b | 0) << 16) | ((g | 0) << 8) | (r | 0);
 }
 
-export function makePalette(calcColor: (i: number) => number) {
-	return new Uint32Array(256).map((_value, i) => calcColor(i));
+export function makePalette(calcColor: (i: number) => number, description = ''): Palette {
+	return Object.assign(
+		new Uint32Array(256).map((_value, i) => calcColor(i)),
+		{ description }
+	);
 }
 
-export function makePaletteGraySlice(low = 0, high = 255) {
+export function makePaletteGraySlice(
+	low = 0,
+	high = 255,
+	description = `Grayscale slice[${low}:${high}]`
+) {
 	return makePalette((i) => {
 		if (i < low) {
 			return makeColor(i >> 1, i, 255);
@@ -15,17 +26,17 @@ export function makePaletteGraySlice(low = 0, high = 255) {
 			return makeColor(i, i, i);
 		}
 		return makeColor(255, i, i >> 1);
-	});
+	}, description);
 }
 
-export const paletteGray = makePaletteGraySlice();
+export const paletteGray = makePaletteGraySlice(0, 255, 'Grayscale');
 
 export const paletteCyan = makePalette((i) => {
 	const g = i,
 		b = i,
 		a = 255;
 	return (a << 24) | (b << 16) | (g << 8);
-});
+}, 'Cyan');
 
 export function makeFirePalette(options: { blue?: boolean; extended?: boolean } = {}) {
 	options = {
@@ -38,7 +49,9 @@ export function makeFirePalette(options: { blue?: boolean; extended?: boolean } 
 		g = 0,
 		b = 0;
 
-	let palette = new Uint32Array(256);
+	let palette = Object.assign(new Uint32Array(256), {
+		description: `Fire256 ${options.extended ? 'extended' : ''} ${options.blue ? 'blue' : ''}`
+	});
 	palette.fill(makeColor(r, g, b));
 
 	let i = 255;
@@ -87,7 +100,10 @@ export function makeFirePalette(options: { blue?: boolean; extended?: boolean } 
 
 	if (options.blue) {
 		// Use blue channel to track fire intensity value.
-		palette = palette.map((value, index) => value | (index << 16));
+		palette = Object.assign(
+			palette.map((value, index) => value | (index << 16)),
+			{ description: palette.description }
+		);
 	}
 
 	return palette;
@@ -104,7 +120,10 @@ export function makeFirePalette2048(options: { blue?: boolean; extended?: boolea
 		g = 0,
 		b = 0;
 
-	let palette = new Uint32Array(2048);
+	let palette = Object.assign(new Uint32Array(2048), {
+		description: `Fire2048 ${options.extended ? 'extended' : ''} ${options.blue ? 'blue' : ''}`
+	});
+
 	palette.fill(makeColor(r, g, b));
 
 	let i = 2048;
@@ -153,21 +172,25 @@ export function makeFirePalette2048(options: { blue?: boolean; extended?: boolea
 
 	if (options.blue) {
 		// Use blue channel to track fire intensity value.
-		palette = palette.map((value, index) => value | (((index / 8) | 0) << 16));
+		palette = Object.assign(
+			palette.map((value, index) => value | (((index / 8) | 0) << 16)),
+			{ description: palette.description }
+		);
 	}
 
 	return palette;
 }
 
-export function rotateRight(arr: Uint32Array<ArrayBuffer>) {
+export function rotateRight(arr: Palette) {
 	const last = arr[arr.length - 1];
 	for (let i = arr.length - 1; i > 0; i--) {
 		arr[i] = arr[i - 1];
 	}
 	arr[0] = last;
+	return arr;
 }
 
-export function rotateLeft(arr: Uint32Array<ArrayBuffer>) {
+export function rotateLeft(arr: Palette) {
 	const first = arr[0];
 	for (let i = 0; i < arr.length - 1; i++) {
 		arr[i] = arr[i + 1];

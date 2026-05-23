@@ -45,10 +45,9 @@
 			generateNoise(grid);
 		}}
 		onupdate={(fx) => {
-			rotateLeft(fx.palettes[fx.paletteIndex] as Uint32Array<ArrayBuffer>);
+			rotateLeft(fx.palettes[fx.paletteIndex]);
 		}}
-		onrender={(fx) =>
-			renderNoisePalette(grid, imageData, fx.palettes[fx.paletteIndex] as Uint32Array<ArrayBuffer>)}
+		onrender={(fx) => renderNoisePalette(grid, imageData, fx.palettes[fx.paletteIndex])}
 	></GraphicalEffect>
 </main>
 

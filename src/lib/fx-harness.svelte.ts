@@ -1,6 +1,6 @@
 import { untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
-import { makePaletteGraySlice, paletteGray } from '$lib/palette';
+import { makePaletteGraySlice, type Palette } from '$lib/palette';
 
 export type FxState = {
 	paused: boolean;
@@ -15,7 +15,7 @@ export type FxState = {
 	scalingFactor: number;
 	pixelAspectRatio: number;
 
-	palettes: Uint32Array[];
+	palettes: Palette[];
 	paletteIndex: number;
 
 	low: number;
@@ -74,7 +74,7 @@ export function makeFxHarness() {
 		scalingFactor: 1,
 		pixelAspectRatio: 1,
 
-		palettes: [paletteGray],
+		palettes: [makePaletteGraySlice()],
 		paletteIndex: 1,
 
 		low: 128,
@@ -155,7 +155,6 @@ export function makeFxHarness() {
 							fx.low = 0;
 							fx.high = 255;
 						}
-						fx.palettes[0] = makePaletteGraySlice(fx.low, fx.high);
 					}
 
 					fx.paletteIndex = Math.min(number, fx.palettes.length - 1);
@@ -262,7 +261,7 @@ export function makeFxHarness() {
 
 				infoString = `${fps.toFixed(0)}FPS ${frameTime === 2222 ? '0' : frameTime.toFixed(1)}ms (${fpsPercentage.toFixed(0)}%)
 					${dimensions}
-					Palette: ${fx.paletteIndex} Range: ${fx.low}-${fx.high}`;
+					Palette: ${fx.paletteIndex} ${fx.palettes[fx.paletteIndex].description}`;
 
 				if (infoHandler) {
 					infoString = infoHandler(infoString);

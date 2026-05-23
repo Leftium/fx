@@ -388,13 +388,7 @@
 					? [colorWhite, colorBlack]
 					: [colorPurple, colorGreen];
 
-			return renderFire(
-				heatNext,
-				imageData,
-				fx.palettes[fx.paletteIndex] as Uint32Array<ArrayBuffer>,
-				colorOver,
-				colorUnder
-			);
+			return renderFire(heatNext, imageData, fx.palettes[fx.paletteIndex], colorOver, colorUnder);
 		}}
 		oninfo={(info) => {
 			return `${info}

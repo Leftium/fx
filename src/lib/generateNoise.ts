@@ -1,6 +1,6 @@
 // Precompute grayscale palette
 
-import { paletteGray } from '$lib/palette';
+import { paletteGray, type Palette } from '$lib/palette';
 
 const MAX_BYTES = 65536;
 
@@ -46,7 +46,7 @@ export function renderNoiseColor(noise: Uint32Array, imageData: ImageData) {
 export function renderNoisePalette(
 	noise: Uint8Array | Uint32Array,
 	imageData: ImageData,
-	palette = paletteGray
+	palette: Palette = paletteGray
 ) {
 	// reinterpret the buffer as 32‑bit words
 	const data32 = new Uint32Array(imageData.data.buffer);
