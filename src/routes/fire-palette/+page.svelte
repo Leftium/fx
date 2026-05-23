@@ -2,7 +2,7 @@
 	import { createOpaqueImageData, type FxState } from '$lib/fx-harness.svelte';
 	import { renderNoisePalette } from '$lib/generateNoise';
 	import GraphicalEffect from '$lib/GraphicalEffect.svelte';
-	import { makeColor } from '$lib/palette';
+	import { makeColor, type Palette } from '$lib/palette';
 
 	let imageData: ImageData;
 	let grid = new Uint8Array(0);
@@ -123,7 +123,7 @@
 			g = 0,
 			b = 0;
 
-		let palette = new Uint32Array(256);
+		let palette = Object.assign(new Uint32Array(256), { description: 'fire palette' });
 		palette.fill(makeColor(r, g, b));
 
 		let i = 128;
@@ -229,7 +229,7 @@
 		return palette;
 	}
 
-	let paletteFire = $state(makeFirePalette(false));
+	let paletteFire = $state<Palette>(makeFirePalette(false));
 
 	function paletteStops(palette: Uint32Array, positions = [0, 64, 128, 192, 255]) {
 		return positions.map((pos) => {
@@ -250,7 +250,7 @@
 	// Array of refs to SVG elements
 	let svgRefs: SVGSVGElement[] = [];
 
-	let firePalettes: Uint32Array<ArrayBuffer>[] = [];
+	let firePalettes: Palette[] = [];
 
 	onMount(async () => {
 		for (const [i, svgEl] of svgRefs.entries()) {
@@ -289,7 +289,7 @@
 				}
 			}
 			console.log(`Palette ${i} ready:`, arr);
-			firePalettes.push(arr);
+			firePalettes.push(Object.assign(arr, { description: 'Palette extracted from image' }));
 		}
 	});
 </script>
