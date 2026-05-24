@@ -187,6 +187,10 @@ export function makeFxHarness(url: URL) {
 
 				if (componentCount > 1 && !fx.active) return;
 
+				if (event.key === 'Home') {
+					document.location = url.origin;
+				}
+
 				if (event.key === 'u') {
 					url.search = fxStateToSearchParams(fx as FxState);
 					console.log(url.toString());
