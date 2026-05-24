@@ -21,6 +21,9 @@ export type FxState<Extra extends Record<string, boolean | number> = {}> = {
 
 	low: number;
 	high: number;
+
+	fpsTarget: number;
+	fpsMin: number;
 } & Extra;
 
 type FxHarnessOptions = {
@@ -95,8 +98,14 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 		paletteIndex: 1,
 
 		low: 128,
-		high: 128
+		high: 128,
+
+		fpsTarget: 1000, // 1000 for perf test; lower to achievable value like 60 for consistent output.
+		fpsMin: 75 // Ideally the refresh rate of the monitor.
 	});
+
+	const step = $derived(1000 / fx.fpsTarget);
+	const maxFrameTime = $derived(1000 / fx.fpsMin / 1.1);
 
 	function fxHarness({
 		initHandler,
@@ -321,21 +330,35 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 				}
 			}
 
-			const intervalIds = [
-				setInterval(doUpdate),
-				setInterval(doUpdate),
-				setInterval(doUpdate),
-				setInterval(doUpdate),
+			const intervalIds = [setInterval(renderInfo, 500)];
 
-				setInterval(renderInfo, 500)
-			];
+			let rafId: number | null = null;
+			let lastTime = performance.now();
+			let accumulator = 0;
 
-			function renderLoop() {
+			function loop(now: number) {
+				accumulator += now - lastTime;
+				lastTime = now;
+
+				const frameStart = performance.now();
+
+				while (accumulator >= step) {
+					doUpdate();
+					accumulator -= step;
+
+					// Exit early if we've spent too long updating
+					if (performance.now() - frameStart > maxFrameTime) {
+						//console.warn('Skipping updates to maintain render FPS');
+						accumulator = 0; // drop remaining accumulated time
+						break;
+					}
+				}
+
 				internalRender(fx);
 				frameRateRender.recordFrame();
-				requestAnimationFrame(renderLoop);
+				rafId = requestAnimationFrame(loop);
 			}
-			requestAnimationFrame(renderLoop);
+			rafId = requestAnimationFrame(loop);
 
 			const abortController = new AbortController();
 			const { signal } = abortController;
@@ -354,6 +377,10 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 				abortController.abort();
 				for (const intervalId of intervalIds) {
 					clearInterval(intervalId);
+				}
+				if (rafId !== null) {
+					cancelAnimationFrame(rafId);
+					rafId = null;
 				}
 			};
 		};
