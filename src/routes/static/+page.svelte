@@ -1,20 +1,25 @@
 <script lang="ts">
+	import { textMask, type Mask } from '$lib/draw';
 	import { createOpaqueImageData, type FxState } from '$lib/fx-harness.svelte';
 	import { generateNoiseUint8, renderNoisePalette } from '$lib/generateNoise';
 	import GraphicalEffect from '$lib/GraphicalEffect.svelte';
 	import { makeFirePalette, paletteCyan, makePaletteGraySlice } from '$lib/palette';
 
+	type FxStatic = {
+		text: string;
+	};
+
 	let imageData: ImageData;
 	let noisePrev = new Uint8Array(0);
 	let noiseNext = new Uint8Array(0);
 
-	let noiseMask = new Uint8Array(0);
-	let randValues = new Uint8Array(0);
+	let mask: Mask | null = null;
 </script>
 
 <main>
 	<GraphicalEffect
-		oninit={(fx: FxState) => {
+		oninit={(fxBase) => {
+			const fx = fxBase as FxState<FxStatic>;
 			//console.log('init', $state.snapshot(fx));
 			fx.scalingFactor = 1 / 2;
 			// Pixel ratio based on NTSC 440x486 resolution stretched to 4:3 aspect ratio.
@@ -23,6 +28,8 @@
 			fx.palettes.push(makePaletteGraySlice(0, 255, 'Black & White'));
 			fx.palettes.push(paletteCyan);
 			fx.palettes.push(makeFirePalette({ extended: true }));
+
+			fx.text = 'STATIC';
 		}}
 		onresize={(fx, width, height) => {
 			console.log('resizeHandler', { width, height });
@@ -30,40 +37,26 @@
 				return;
 			}
 
+			mask = textMask((fx as FxState<FxStatic>).text, '90px sans-serif', true);
+
 			imageData = createOpaqueImageData(width, height);
 			noisePrev = new Uint8Array(width * height);
 			noiseNext = new Uint8Array(width * height);
-			noiseMask = new Uint8Array(width * height);
-			randValues = new Uint8Array(width * height);
 
 			generateNoiseUint8(noisePrev);
 			generateNoiseUint8(noiseNext);
-
-			for (let j = 0; j < imageData.height; j++) {
-				for (let i = 0; i < imageData.width; i++) {
-					const gridX = Math.floor(i / (100 / fx.pixelAspectRatio)) % 2;
-					const gridY = Math.floor(j / 100) % 2;
-					const index = i + j * imageData.width;
-
-					if (gridX == 0 && gridY == 0) {
-						noiseMask[index] = 255;
-					}
-
-					if (gridX == 1 && gridY == 1) {
-						noiseMask[index] = 255 * 0.8;
-					}
-				}
-			}
 		}}
-		onupdate={() => {
+		onupdate={(fx) => {
 			[noisePrev, noiseNext] = [noiseNext, noisePrev];
 
 			generateNoiseUint8(noiseNext);
-			generateNoiseUint8(randValues);
 
-			for (let i = 0; i < noiseNext.length; i++) {
-				if (randValues[i] <= noiseMask[i]) {
-					noiseNext[i] = noisePrev[i];
+			if (mask) {
+				const x = (fx.width / 2 - mask.width / 2) | 0;
+				const y = (fx.height / 2 - mask.height / 2) | 0;
+				for (const { u, v } of mask.data) {
+					const index = (y + v) * fx.width + (x + u);
+					noiseNext[index] = noisePrev[index];
 				}
 			}
 		}}

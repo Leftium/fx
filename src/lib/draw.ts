@@ -4,7 +4,7 @@ export type Mask = {
 	data: { u: number; v: number }[];
 };
 
-export function textMask(text: string, font = '70px sans-serif'): Mask | null {
+export function textMask(text: string, font = '70px sans-serif', fill = false): Mask | null {
 	const canvas = document.createElement('canvas');
 	const ctx = canvas.getContext('2d');
 	if (!ctx || !text) return null;
@@ -29,7 +29,11 @@ export function textMask(text: string, font = '70px sans-serif'): Mask | null {
 	// Redraw text after resizing
 	ctx.font = font;
 	ctx.textBaseline = 'top';
-	ctx.strokeText(text, 0, 0);
+	if (fill) {
+		ctx.fillText(text, 0, 0);
+	} else {
+		ctx.strokeText(text, 0, 0);
+	}
 
 	const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
