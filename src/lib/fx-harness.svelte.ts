@@ -56,7 +56,11 @@ export function createOpaqueImageData(width: number, height: number) {
 	return imageData;
 }
 
+let componentCount = 0;
+
 export function makeFxHarness(searchParams: URLSearchParams) {
+	componentCount++;
+
 	// Frame counter based on: https://stackoverflow.com/a/5111475
 	// The higher this value, the less the fps will reflect temporary variations
 	// A value of 1 will only keep the last value
@@ -163,7 +167,7 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 					}
 				}
 
-				if (!fx.active) return;
+				if (componentCount > 1 && !fx.active) return;
 
 				if (event.key === 'i') {
 					fx.infoHidden = !fx.infoHidden;
@@ -403,6 +407,7 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 
 			return () => {
 				// Clean up
+				componentCount--;
 				abortController.abort();
 				for (const intervalId of intervalIds) {
 					clearInterval(intervalId);
