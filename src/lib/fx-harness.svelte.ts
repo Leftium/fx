@@ -46,6 +46,24 @@ type FxHarnessOptions = {
 	mousemoveHandler?: (fx: FxState, event: MouseEvent) => void;
 };
 
+export function fxStateToSearchParams(fx: FxState) {
+	const params = new URLSearchParams();
+
+	// Iterate over all keys in the object
+	for (const [key, value] of Object.entries(fx)) {
+		// Skip complex fields like palettes (arrays of objects)
+		// Skip non-config state
+		if (['palettes', 'mouseX', 'mouseY', 'frames', 'active'].includes(key)) continue;
+
+		// Convert booleans and numbers to strings
+		if (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') {
+			params.set(key, String(value));
+		}
+	}
+
+	return params.toString();
+}
+
 export function createOpaqueImageData(width: number, height: number) {
 	const imageData = new ImageData(width, height);
 	const data = imageData.data;
@@ -58,7 +76,7 @@ export function createOpaqueImageData(width: number, height: number) {
 
 let componentCount = 0;
 
-export function makeFxHarness(searchParams: URLSearchParams) {
+export function makeFxHarness(url: URL) {
 	componentCount++;
 
 	// Frame counter based on: https://stackoverflow.com/a/5111475
@@ -168,6 +186,18 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 				}
 
 				if (componentCount > 1 && !fx.active) return;
+
+				if (event.key === 'u') {
+					url.search = fxStateToSearchParams(fx as FxState);
+					console.log(url.toString());
+					(async () => {
+						try {
+							await navigator.clipboard.writeText(url.toString());
+						} catch (err) {
+							console.error('Failed to copy:', err);
+						}
+					})();
+				}
 
 				if (event.key === 'i') {
 					fx.infoHidden = !fx.infoHidden;
@@ -314,7 +344,7 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 
 				// Apply URL params to fx state:
 				for (const name of Object.keys(fx) as (keyof FxState)[]) {
-					const paramValue = searchParams.get(name);
+					const paramValue = url.searchParams.get(name);
 					if (paramValue !== null) {
 						setParam(fx, name, paramValue);
 					}

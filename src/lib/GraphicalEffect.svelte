@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { makeFxHarness, type FxState } from './fx-harness.svelte';
 
-	const { fx, fxHarness, getInfoString } = makeFxHarness(page.url.searchParams);
+	const { fx, fxHarness, getInfoString } = makeFxHarness(page.url);
 
 	interface Props {
 		oninit?: (fx: FxState) => void;
