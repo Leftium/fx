@@ -12,6 +12,7 @@
 		oninfo?: (fx: FxState, info: string) => string;
 		style?: string;
 		onkeydown?: (fx: FxState, event: KeyboardEvent) => void;
+		onmousemove?: (fx: FxState, event: MouseEvent) => void;
 	}
 
 	const {
@@ -21,6 +22,7 @@
 		onresize: resizeHandler,
 		oninfo: infoHandler,
 		onkeydown: keydownHandler,
+		onmousemove: mousemoveHandler,
 		style = 'width: 100%; height: 100%'
 	}: Props = $props();
 </script>
@@ -32,7 +34,8 @@
 		renderHandler,
 		resizeHandler,
 		infoHandler,
-		keydownHandler
+		keydownHandler,
+		mousemoveHandler
 	})}
 	{style}
 >

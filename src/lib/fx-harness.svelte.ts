@@ -31,6 +31,9 @@ export type FxState<Extra extends FxRecord = {}> = {
 
 	width: number;
 	height: number;
+
+	mouseX: number;
+	mouseY: number;
 } & Extra;
 
 type FxHarnessOptions = {
@@ -40,6 +43,7 @@ type FxHarnessOptions = {
 	resizeHandler?: (fx: FxState, width: number, height: number, isSameSize?: boolean) => void;
 	infoHandler?: (fx: FxState, infoString: string) => string;
 	keydownHandler?: (fx: FxState, event: KeyboardEvent) => void;
+	mousemoveHandler?: (fx: FxState, event: MouseEvent) => void;
 };
 
 export function createOpaqueImageData(width: number, height: number) {
@@ -113,7 +117,10 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 		frame: 0,
 
 		width: 0,
-		height: 0
+		height: 0,
+
+		mouseX: 0,
+		mouseY: 0
 	});
 
 	const step = $derived(1000 / fx.fpsTarget);
@@ -125,7 +132,8 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 		renderHandler,
 		resizeHandler,
 		infoHandler,
-		keydownHandler
+		keydownHandler,
+		mousemoveHandler
 	}: FxHarnessOptions): Attachment {
 		return (element) => {
 			console.log('attaching');
@@ -236,6 +244,15 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 				}
 				internalRender(fx);
 				renderInfo();
+			}
+
+			function internalMousemove(fx: FxState, event: MouseEvent) {
+				fx.mouseX = (event.offsetX * fx.scalingFactor) / fx.pixelAspectRatio;
+				fx.mouseY = event.offsetY * fx.scalingFactor;
+
+				if (mousemoveHandler) {
+					mousemoveHandler(fx, event);
+				}
 			}
 
 			function internalClick(fx: FxState) {
@@ -380,8 +397,10 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 			element.addEventListener('resize', () => internalResize(fx), { signal });
 			element.addEventListener('click', () => internalClick(fx), { signal });
 
-			element.addEventListener('mouseenter', () => (fx.active = true), { signal });
-			element.addEventListener('mouseleave', () => (fx.active = false), { signal });
+			container.addEventListener('mouseenter', () => (fx.active = true), { signal });
+			container.addEventListener('mouseleave', () => (fx.active = false), { signal });
+
+			container.addEventListener('mousemove', (e) => internalMousemove(fx, e), { signal });
 
 			return () => {
 				// Clean up
