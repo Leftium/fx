@@ -288,9 +288,8 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 
 			function renderInfo() {
 				const fps = 1000 / frameTime;
-				const fpsPercentage = (fps * 100) / 250;
 
-				infoString = `${fps.toFixed(0)}FPS ${frameTime === 2222 ? '0' : frameTime.toFixed(1)}ms (${fpsPercentage.toFixed(0)}%)
+				infoString = `${fps.toFixed(0)}FPS ${frameTime === 2222 ? '0' : frameTime.toFixed(1)}ms
 					${dimensions}
 					Palette: ${fx.paletteIndex} ${fx.palettes[fx.paletteIndex].description}`;
 
@@ -300,15 +299,23 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 			}
 			setTimeout(renderInfo);
 
-			const intervalIds = [
-				setInterval(() => {
-					if (!document.fullscreenElement || document.fullscreenElement == container) {
-						if (!fx.paused) {
-							internalUpdate(fx);
-							internalRender(fx);
-						}
-						updateFps();
+			function doUpdate() {
+				if (!document.fullscreenElement || document.fullscreenElement == container) {
+					if (!fx.paused) {
+						internalUpdate(fx);
 					}
+					updateFps();
+				}
+			}
+
+			const intervalIds = [
+				setInterval(doUpdate),
+				setInterval(doUpdate),
+				setInterval(doUpdate),
+				setInterval(doUpdate),
+
+				setInterval(() => {
+					internalRender(fx);
 				}),
 
 				setInterval(renderInfo, 500)
