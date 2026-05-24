@@ -48,17 +48,32 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 	// A value of 1 will only keep the last value
 	const filterStrength = 10;
 
-	let frameTime = $state(2222);
+	class FrameRate {
+		private averageFrameTime = $state(2222);
+		private lastLoop = performance.now();
+		private currLoop = 0;
 
-	let lastLoop = performance.now();
-	let thisLoop = lastLoop;
+		recordFrame() {
+			this.currLoop = performance.now();
+			const deltaFrameTime = this.currLoop - this.lastLoop;
+			this.averageFrameTime += (deltaFrameTime - this.averageFrameTime) / filterStrength;
+			this.lastLoop = this.currLoop;
+		}
 
-	function updateFps() {
-		thisLoop = performance.now();
-		const thisFrameTime = thisLoop - lastLoop;
-		frameTime += (thisFrameTime - frameTime) / filterStrength;
-		lastLoop = thisLoop;
+		get frameTime(): number {
+			return this.averageFrameTime === 2222 ? 0 : this.averageFrameTime;
+		}
+
+		get fps(): number {
+			return 1000 / this.averageFrameTime;
+		}
+
+		toString(): string {
+			return `${this.fps.toFixed(0)}FPS ${this.frameTime.toFixed(1)}ms`;
+		}
 	}
+	const frameRateUpdate = new FrameRate();
+	const frameRateRender = new FrameRate();
 
 	let dimensions = $state('WxH (WxH)');
 	let infoString = $state('info');
@@ -287,9 +302,7 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 			}
 
 			function renderInfo() {
-				const fps = 1000 / frameTime;
-
-				infoString = `${fps.toFixed(0)}FPS ${frameTime === 2222 ? '0' : frameTime.toFixed(1)}ms
+				infoString = `${frameRateUpdate} (${frameRateRender})
 					${dimensions}
 					Palette: ${fx.paletteIndex} ${fx.palettes[fx.paletteIndex].description}`;
 
@@ -304,7 +317,7 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 					if (!fx.paused) {
 						internalUpdate(fx);
 					}
-					updateFps();
+					frameRateUpdate.recordFrame();
 				}
 			}
 
@@ -314,12 +327,15 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 				setInterval(doUpdate),
 				setInterval(doUpdate),
 
-				setInterval(() => {
-					internalRender(fx);
-				}),
-
 				setInterval(renderInfo, 500)
 			];
+
+			function renderLoop() {
+				internalRender(fx);
+				frameRateRender.recordFrame();
+				requestAnimationFrame(renderLoop);
+			}
+			requestAnimationFrame(renderLoop);
 
 			const abortController = new AbortController();
 			const { signal } = abortController;
