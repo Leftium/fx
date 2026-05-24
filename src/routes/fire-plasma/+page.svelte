@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { textMask, type Mask } from '$lib/draw';
 	import { createOpaqueImageData, type FxState } from '$lib/fx-harness.svelte';
 	import GraphicalEffect from '$lib/GraphicalEffect.svelte';
 	import { makeColor, makeFirePalette, makeFirePalette2048, paletteGray } from '$lib/palette';
@@ -6,12 +7,15 @@
 	type FxFire = {
 		fireSeedIndex: number;
 		fireKernelIndex: number;
+		text: string;
 	};
 
 	let imageData: ImageData;
 
 	let heatPrev = new Float32Array(0);
 	let heatNext = new Float32Array(0);
+
+	let mask: Mask | null = null;
 
 	const padSides = 0;
 	const padTop = 1;
@@ -167,11 +171,9 @@
 		}
 	}
 
-	let count = 0;
-	function seedFireSin(heatPrev: Float32Array<ArrayBuffer>) {
+	function seedFireSin(heatPrev: Float32Array<ArrayBuffer>, count = 0) {
 		// Add heat to bottom rows (fuel source)
 
-		count++;
 		//if (count % 3 !== 0) return;
 
 		const bottom = heatHeight + padTop - 40;
@@ -193,10 +195,9 @@
 		/**/
 	}
 
-	function seedFireSinRandom(heatPrev: Float32Array<ArrayBuffer>) {
+	function seedFireSinRandom(heatPrev: Float32Array<ArrayBuffer>, count = 0) {
 		// Add heat to bottom rows (fuel source)
 
-		count++;
 		//if (count % 3 !== 0) return;
 
 		const bottom = heatHeight + padTop - 40;
@@ -252,7 +253,18 @@
 
 		[heatPrev, heatNext] = [heatNext, heatPrev];
 
-		fireSeeds[(fx as FxState<FxFire>).fireSeedIndex](heatPrev);
+		fireSeeds[(fx as FxState<FxFire>).fireSeedIndex](heatPrev, fx.frame);
+
+		if (mask) {
+			const deltaY = Math.cos((((fx.frame / 17) * Math.PI) / 180) * 13) * 30;
+			const deltaX = Math.sin((((fx.frame / 23) * Math.PI) / 180) * 11) * 70;
+			const y = (heatHeight + padTop - 150 + deltaY) | 0;
+			const x = (fx.width / 2 - mask.width / 2 + deltaX) | 0;
+
+			for (const { u, v } of mask.data) {
+				heatPrev[(y + v) * paddedWidth + (x + u)] += 0.015;
+			}
+		}
 
 		for (let y = heatHeight; y > 0; y--) {
 			let maxHeat = 0;
@@ -265,7 +277,7 @@
 				maxHeat = Math.max(maxHeat, heatValue);
 			}
 
-			if (y < 100 && maxHeat < minimalHeatThreshold) {
+			if (y < fx.height - 100 && maxHeat < minimalHeatThreshold) {
 				//console.log('break:', { y });
 				// Fill the rest of heatNext efficiently
 				heatNext.fill(minimalHeatThreshold, 0, (y - 1) * paddedWidth);
@@ -303,7 +315,7 @@
 			const fx = fxBase as FxState<FxFire>;
 
 			fx.standardSize = true;
-			fx.standardWidth = 500;
+			//fx.standardWidth = 500;
 			fx.standardHeight = 800;
 			//fx.pixelAspectRatio = .5
 
@@ -329,6 +341,8 @@
 
 			fx.fireSeedIndex = 0;
 			fx.fireKernelIndex = 1;
+
+			fx.text = 'Leftium';
 		}}
 		onresize={(fx, width, height, isSameSize) => {
 			console.log('resizeHandler', { width, height });
@@ -344,6 +358,8 @@
 				default:
 					minimalHeatThreshold = 0;
 			}
+
+			mask = textMask((fx as FxState<FxFire>).text);
 
 			if (!isSameSize) {
 				imageData = createOpaqueImageData(width, height);

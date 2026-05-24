@@ -2,8 +2,10 @@ import { untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 import { makePaletteGraySlice, type Palette } from '$lib/palette';
 
+type FxRecord = Record<string, boolean | number | string | Palette[]>;
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export type FxState<Extra extends Record<string, boolean | number> = {}> = {
+export type FxState<Extra extends FxRecord = {}> = {
 	paused: boolean;
 	infoHidden: boolean;
 	active: boolean;
@@ -24,6 +26,11 @@ export type FxState<Extra extends Record<string, boolean | number> = {}> = {
 
 	fpsTarget: number;
 	fpsMin: number;
+
+	frame: number;
+
+	width: number;
+	height: number;
 } & Extra;
 
 type FxHarnessOptions = {
@@ -101,7 +108,12 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 		high: 128,
 
 		fpsTarget: 1000, // 1000 for perf test; lower to achievable value like 60 for consistent output.
-		fpsMin: 75 // Ideally the refresh rate of the monitor.
+		fpsMin: 75, // Ideally the refresh rate of the monitor.
+
+		frame: 0,
+
+		width: 0,
+		height: 0
 	});
 
 	const step = $derived(1000 / fx.fpsTarget);
@@ -255,12 +267,8 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 
 				dimensions = `${canvasWidth}x${canvasHeight} (${canvas.width}x${canvas.height})`;
 
-				/*
-				console.log(
-					`internalResizeHandler: ${canvasWidth}x${canvasHeight} (${fx.canvas.width}x${fx.canvas.height})`,
-					fx.canvas
-				);
-				*/
+				fx.width = canvas.width;
+				fx.height = canvas.height;
 
 				if (resizeHandler) {
 					resizeHandler(fx, canvas.width, canvas.height);
@@ -296,16 +304,18 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 			});
 
 			// Utility function to set fx fields in type-safe way.
-			function setParam<K extends keyof FxState>(fx: FxState, key: K, value: string) {
+			function setParam<K extends keyof FxRecord>(fx: FxRecord, key: K, value: string) {
 				const numValue = Number(value);
 				const current = fx[key];
 
 				if (typeof current === 'boolean') {
-					fx[key] = (value.toLowerCase() === 'true' || value === '1') as FxState[K];
+					fx[key] = value.toLowerCase() === 'true' || value === '1';
 				} else if (typeof current === 'number') {
 					if (Number.isFinite(numValue)) {
-						fx[key] = numValue as FxState[K];
+						fx[key] = numValue;
 					}
+				} else if (typeof current === 'string') {
+					fx[key] = value;
 				}
 				// skip arrays like palettes
 			}
@@ -325,6 +335,7 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 				if (!document.fullscreenElement || document.fullscreenElement == container) {
 					if (!fx.paused) {
 						internalUpdate(fx);
+						fx.frame++;
 					}
 					frameRateUpdate.recordFrame();
 				}
