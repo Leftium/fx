@@ -308,8 +308,7 @@ export function makeFxHarness(searchParams: URLSearchParams) {
 				fx.palettes[0] = makePaletteGraySlice(fx.low, fx.high);
 				fx.paletteIndex = Math.min(fx.paletteIndex, fx.palettes.length - 1);
 
-				// Todo: apply URL params to fx state.
-
+				// Apply URL params to fx state:
 				for (const name of Object.keys(fx) as (keyof FxState)[]) {
 					const paramValue = searchParams.get(name);
 					if (paramValue !== null) {
