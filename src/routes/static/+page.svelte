@@ -52,9 +52,11 @@
 			generateNoiseUint8(noiseNext);
 
 			if (mask) {
-				const x = ((fx.active ? fx.mouseX : fx.width / 2) - mask.width / 2) | 0;
+				const x = ((fx.active && fx.mouseX ? fx.mouseX : fx.width / 2) - mask.width / 2) | 0;
 				const y =
-					((fx.active ? fx.mouseY - mask.height * 0.25 : fx.height / 2) - mask.height / 2) | 0;
+					((fx.active && fx.mouseY ? fx.mouseY - mask.height * 0.25 : fx.height / 2) -
+						mask.height / 2) |
+					0;
 				for (const { u, v } of mask.data) {
 					const index = (y + v) * fx.width + (x + u);
 					noiseNext[index] = noisePrev[index];

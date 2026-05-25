@@ -272,9 +272,13 @@
 			const deltaY = Math.cos((((fx.frame / 17) * Math.PI) / 180) * 13) * 30;
 			const deltaX = Math.sin((((fx.frame / 23) * Math.PI) / 180) * 11) * 70;
 			const y =
-				(fx.active ? fx.mouseY - mask.height * 0.75 : heatHeight + padTop - 150 + deltaY) | 0;
+				(fx.active && fx.mouseY
+					? fx.mouseY - mask.height * 0.75
+					: heatHeight + padTop - 150 + deltaY) | 0;
 			const x =
-				(fx.active ? fx.mouseX - mask.width / 2 : fx.width / 2 - mask.width / 2 + deltaX) | 0;
+				(fx.active && fx.mouseX
+					? fx.mouseX - mask.width / 2
+					: fx.width / 2 - mask.width / 2 + deltaX) | 0;
 
 			for (const { u, v } of mask.data) {
 				heatPrev[(y + v) * paddedWidth + (x + u)] += 0.015;
