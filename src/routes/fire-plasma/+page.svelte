@@ -38,6 +38,7 @@
 	];
 
 	let fireSeeds = [
+		seedFireNull,
 		seedFireDefault,
 		seedFireClamped,
 		seedFireRandom,
@@ -155,6 +156,10 @@
 			getFire(heatPrev, x + 0, y + 6);
 		//return sum / 8 - sum / 4096;
 		return sum / 8.02;
+	}
+
+	function seedFireNull() {
+		return;
 	}
 
 	function seedFireDefault(heatPrev: Float32Array<ArrayBuffer>) {
@@ -341,7 +346,7 @@
 			fx.low = 140;
 			fx.high = 140;
 
-			fx.fireSeedIndex = 0;
+			fx.fireSeedIndex = 1;
 			fx.fireKernelIndex = 1;
 
 			fx.text = 'Leftium';
