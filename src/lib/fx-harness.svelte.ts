@@ -53,7 +53,7 @@ export function fxStateToSearchParams(fx: FxState) {
 	for (const [key, value] of Object.entries(fx)) {
 		// Skip complex fields like palettes (arrays of objects)
 		// Skip non-config state
-		if (['palettes', 'mouseX', 'mouseY', 'frames', 'active'].includes(key)) continue;
+		if (['palettes', 'mouseX', 'mouseY', 'frame', 'active'].includes(key)) continue;
 
 		// Convert booleans and numbers to strings
 		if (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') {
