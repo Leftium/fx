@@ -1,6 +1,7 @@
 import { untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 import { makePaletteGraySlice, type Palette } from '$lib/palette';
+import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 type FxRecord = Record<string, boolean | number | string | Palette[]>;
 
@@ -47,7 +48,7 @@ type FxHarnessOptions = {
 };
 
 export function fxStateToSearchParams(fx: FxState) {
-	const params = new URLSearchParams();
+	const params = new SvelteURLSearchParams();
 
 	// Iterate over all keys in the object
 	for (const [key, value] of Object.entries(fx)) {
