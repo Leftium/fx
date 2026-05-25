@@ -29,7 +29,7 @@
 			fx.palettes.push(paletteCyan);
 			fx.palettes.push(makeFirePalette({ extended: true }));
 
-			fx.text = 'STATIC';
+			fx.text = 'SECRET';
 		}}
 		onresize={(fx, width, height) => {
 			console.log('resizeHandler', { width, height });
@@ -37,7 +37,7 @@
 				return;
 			}
 
-			mask = textMask((fx as FxState<FxStatic>).text, '60px sans-serif', true);
+			mask = textMask((fx as FxState<FxStatic>).text, '36px sans-serif', true);
 
 			imageData = createOpaqueImageData(width, height);
 			noisePrev = new Uint8Array(width * height);
