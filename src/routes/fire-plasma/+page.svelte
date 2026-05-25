@@ -29,21 +29,29 @@
 
 	let minimalHeatThreshold = 0;
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+	function withDescription<T extends Function>(
+		fn: T,
+		description: string
+	): T & { description: string } {
+		return Object.assign(fn, { description });
+	}
+
 	let fireKernels = [
-		fireKernelNull,
-		fireKernelDefault,
-		fireKernelWide,
-		fireKernelSkinny,
-		fireKernelTruncated
+		withDescription(fireKernelNull, 'Null'),
+		withDescription(fireKernelDefault, 'Default'),
+		withDescription(fireKernelWide, 'Wide'),
+		withDescription(fireKernelSkinny, 'Skinny'),
+		withDescription(fireKernelTruncated, 'Truncated')
 	];
 
 	let fireSeeds = [
-		seedFireNull,
-		seedFireDefault,
-		seedFireClamped,
-		seedFireRandom,
-		seedFireSin,
-		seedFireSinRandom
+		withDescription(seedFireNull, 'Null'),
+		withDescription(seedFireDefault, 'Default'),
+		withDescription(seedFireClamped, 'Clamped'),
+		withDescription(seedFireRandom, 'Random'),
+		withDescription(seedFireSin, 'Sin'),
+		withDescription(seedFireSinRandom, 'SinRandom')
 	];
 
 	const colorPurple = makeColor(255, 0, 255);
@@ -399,8 +407,8 @@
 		oninfo={(fxBase, info) => {
 			const fx = fxBase as FxState<FxFire>;
 			return `${info}
-			Seed: ${fx.fireSeedIndex} ${fireSeeds[fx.fireSeedIndex].name.replace('seedFire', '')}
-			Kernel: ${fx.fireKernelIndex} ${fireKernels[fx.fireKernelIndex].name.replace('fireKernel', '')}`;
+			Seed: ${fx.fireSeedIndex} ${fireSeeds[fx.fireSeedIndex].description}
+			Kernel: ${fx.fireKernelIndex} ${fireKernels[fx.fireKernelIndex].description}`;
 		}}
 		onkeydown={(fxBase, event) => {
 			const fx = fxBase as FxState<FxFire>;
