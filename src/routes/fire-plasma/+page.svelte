@@ -334,7 +334,7 @@
 
 			fx.standardSize = true;
 			fx.standardWidth = 1000;
-			//fx.standardHeight = 800;
+			fx.standardHeight = 600;
 			//fx.pixelAspectRatio = .5
 
 			fx.crtScanlines = false;
