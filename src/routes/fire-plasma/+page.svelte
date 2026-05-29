@@ -2,7 +2,7 @@
 	import { textMask, type Mask } from '$lib/draw';
 	import { createOpaqueImageData, type FxState } from '$lib/fx-harness.svelte';
 	import GraphicalEffect from '$lib/GraphicalEffect.svelte';
-	import { makeColor, makeFirePalette2048, paletteGray } from '$lib/palette';
+	import { makeColor, makeFirePalette, paletteGray } from '$lib/palette';
 
 	type FxFire = {
 		fireSeedIndex: number;
@@ -318,10 +318,10 @@
 
 			//fx.paused = true;
 
-			fx.palettes.push(makeFirePalette2048());
-			fx.palettes.push(makeFirePalette2048({ extended: true }));
-			fx.palettes.push(makeFirePalette2048({ blue: true }));
-			fx.palettes.push(makeFirePalette2048({ extended: true, blue: true }));
+			fx.palettes.push(makeFirePalette());
+			fx.palettes.push(makeFirePalette({ extended: true }));
+			fx.palettes.push(makeFirePalette({ blue: true }));
+			fx.palettes.push(makeFirePalette({ extended: true, blue: true }));
 
 			fx.low = 140;
 			fx.high = 140;

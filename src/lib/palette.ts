@@ -38,7 +38,7 @@ export const paletteCyan = makePalette((i) => {
 	return (a << 24) | (b << 16) | (g << 8);
 }, 'Cyan');
 
-export function makeFirePalette2048(options: { blue?: boolean; extended?: boolean } = {}) {
+export function makeFirePalette(options: { blue?: boolean; extended?: boolean } = {}) {
 	options = {
 		blue: false,
 		extended: false,
