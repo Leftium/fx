@@ -55,6 +55,7 @@
 	const colorGreen = makeColor(0, 255, 0);
 	const colorBlack = makeColor(0, 0, 0);
 	const colorWhite = makeColor(255, 255, 255);
+	const colorClear = makeColor(0, 0, 0, 0);
 
 	// Utility: create fire buffer with padding
 	function createFireBuffer(width: number, height: number) {
@@ -387,7 +388,7 @@
 
 			const [colorOver, colorUnder] =
 				fx.paletteIndex >= 1 && fx.paletteIndex <= 4
-					? [colorWhite, colorBlack]
+					? [colorWhite, colorClear]
 					: [colorPurple, colorGreen];
 
 			return renderFire(heatNext, imageData, fx.palettes[fx.paletteIndex], colorOver, colorUnder);

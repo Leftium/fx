@@ -40,6 +40,7 @@
 	{style}
 >
 	<wrap-effect>
+		<effect-background style:background-color={fx.bgColor}></effect-background>
 		<div class="crt-overlay" hidden={!fx.crtScanlines}></div>
 		<div class="info" hidden={fx.infoHidden}>
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -86,5 +87,29 @@
 		font-size: clamp(12px, 2vw, 18px);
 		pointer-events: none;
 		z-index: 20;
+	}
+
+	wrap-effect {
+		z-index: 0;
+		background-color: white; /* fallback */
+
+		background-image:
+			linear-gradient(45deg, #ccc 25%, transparent 25%),
+			linear-gradient(-45deg, #ccc 25%, transparent 25%),
+			linear-gradient(45deg, transparent 75%, #ccc 75%),
+			linear-gradient(-45deg, transparent 75%, #ccc 75%);
+		background-size: 20px 20px;
+		background-position:
+			0 0,
+			0 10px,
+			10px -10px,
+			-10px 0px;
+	}
+
+	effect-background {
+		display: block;
+		position: absolute;
+		inset: 0;
+		z-index: -10;
 	}
 </style>

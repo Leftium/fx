@@ -11,6 +11,7 @@ export type FxState<Extra extends FxRecord = {}> = {
 	infoHidden: boolean;
 	active: boolean;
 	crtScanlines: boolean;
+	bgColor: string;
 
 	standardSize: boolean;
 	standardWidth: number;
@@ -120,6 +121,7 @@ export function makeFxHarness(url: URL) {
 		infoHidden: false,
 		active: false,
 		crtScanlines: true,
+		bgColor: 'black',
 
 		standardSize: false,
 		standardWidth: 800,

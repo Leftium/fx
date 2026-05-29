@@ -51,50 +51,62 @@ export function makeFirePalette(options: { blue?: boolean; extended?: boolean } 
 		description: `Fire${paletteLength} ${options.blue ? 'blue' : ''}`
 	});
 
-	palette.fill(makeColor(0, 0, 0));
+	palette.fill(makeColor(0, 0, 0, 0));
 
 	let i = paletteLength;
 	let r = 255,
 		g = 255,
-		b = 255;
+		b = 255,
+		a = 255;
 
 	b++;
-	console.log('Y', { i, r, g, b });
+	console.log('Y', { i, r, g, b, a });
 	while (b > 0) {
 		b -= 1;
-		palette[i] = makeColor(r, g, b);
+
+		palette[i] = makeColor(r, g, b, a);
 		i--;
 	}
 	console.log('Y', { i, r, g, b });
 
 	g++;
-	console.log('O', { i, r, g, b });
+	console.log('O', { i, r, g, b, a });
+	while (g > 128 + 32) {
+		g -= 0.5;
+		if (!options.extended) {
+			g -= 0.5;
+		}
+
+		palette[i] = makeColor(r, g, b, a);
+		i--;
+	}
+	console.log('O', { i, r, g, b, a });
+
+	console.log('O2', { i, r, g, b, a });
 	while (g > 128) {
 		g -= 0.5;
+		a -= 1;
 		if (!options.extended) {
 			g -= 0.5;
+			a -= 1;
 		}
 
-		palette[i] = makeColor(r, g, b);
+		palette[i] = makeColor(r, g, b, a);
 		i--;
 	}
-	console.log('O', { i, r, g, b });
+	console.log('O2', { i, r, g, b, a });
 
-	r++;
-	console.log('B', { i, r, g, b });
-	while (g > 0) {
-		r -= 1;
-		g -= 0.5;
+	console.log('C', { i, r, g, b, a });
+	while (a > 0) {
+		r = Math.max(r - 1, 240);
+		g = Math.max(g - 0.5, 120);
 
-		if (!options.extended) {
-			r -= 1;
-			g -= 0.5;
-		}
+		a = Math.max(0, a - 2);
 
-		palette[i] = makeColor(r, g, b);
+		palette[i] = makeColor(r, g, b, a);
 		i--;
 	}
-	console.log('B', { i, r, g, b });
+	console.log('C', { i, r, g, b, a });
 
 	if (options.blue) {
 		// Use blue channel to track fire intensity value.
