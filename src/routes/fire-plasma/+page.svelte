@@ -291,14 +291,37 @@
 		const paddedWidth = heatWidth + padSides * 2;
 
 		let dst = 0; // index into imageData
-		for (let y = padTop; y < heatHeight + padTop; y++) {
+		let y = padTop;
+		while (y < heatHeight + padTop - 20) {
 			const rowStart = y * paddedWidth + padSides;
 			for (let x = 0; x < heatWidth; x++) {
 				const heat = (heatArray[rowStart + x] * (palette.length - 1)) | 0;
 				data32[dst++] = heat >= palette.length ? colorOver : heat < 0 ? colorUnder : palette[heat];
 			}
+			y++;
 		}
 
+		let lastRow: number[] = [];
+		const rowStart = padSides + paddedWidth * y;
+		for (let x = 0; x < heatWidth; x++) {
+			lastRow[x] = heatArray[rowStart + x];
+		}
+
+		while (y < heatHeight + padTop) {
+			lastRow = lastRow.map((value, index) => {
+				return (
+					(value +
+						lastRow[(index + 1) % heatWidth] +
+						lastRow[(index - 1 + heatWidth) % heatWidth]) /
+					3.2
+				);
+			});
+			for (let x = 0; x < heatWidth; x++) {
+				const heat = (lastRow[x] * (palette.length - 1)) | 0;
+				data32[dst++] = heat >= palette.length ? colorOver : heat < 0 ? colorUnder : palette[heat];
+			}
+			y++;
+		}
 		return imageData;
 	}
 </script>
