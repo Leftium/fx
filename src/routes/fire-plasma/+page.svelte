@@ -23,7 +23,6 @@
 	let heatWidth = 0;
 	let heatHeight = 0;
 
-	let paddedWidth = 0;
 	let paddedHeight = 0;
 
 	let minimalHeatThreshold = 0;
@@ -59,15 +58,14 @@
 
 	// Utility: create fire buffer with padding
 	function createFireBuffer(width: number, height: number) {
-		paddedWidth = width;
 		paddedHeight = height + padTop + padBottom;
-		return new Float32Array(paddedWidth * paddedHeight);
+		return new Float32Array(width * paddedHeight);
 	}
 
 	// Helper: get fire value at (x, y) with padding-aware indexing
 	function getFire(fire: Float32Array, x: number, y: number) {
 		// Wrap x around using modulo
-		return fire[y * paddedWidth + ((x + heatWidth) % heatWidth)];
+		return fire[y * heatWidth + ((x + heatWidth) % heatWidth)];
 	}
 
 	// Null kernel.
@@ -152,7 +150,7 @@
 
 		for (let y = bottomStart; y <= bottomEnd; y++) {
 			for (let x = 0; x < heatWidth; x++) {
-				const index = y * paddedWidth + x;
+				const index = y * heatWidth + x;
 				heatPrev[index] = Math.random() < 0.5 ? 5 : -4;
 			}
 		}
@@ -168,7 +166,7 @@
 			const deltaBottom = (20 * Math.sin(((fx.frame / 7) * Math.PI) / 180)) | 0;
 			const height = 20 * Math.sin(((fx.frame / 5) * Math.PI) / 180);
 			const deltaY = (Math.sin(((x + (fx.frame / 23) * Math.PI) / 180) * 7) * height) | 0;
-			const index = (bottom + deltaBottom + deltaY) * paddedWidth + x;
+			const index = (bottom + deltaBottom + deltaY) * heatWidth + x;
 			heatPrev[index] += 0.35;
 		}
 
@@ -176,7 +174,7 @@
 		for (let x = 0; x < heatWidth; x++) {
 			const height = 20 * Math.sin((fx.frame * Math.PI) / 180);
 			const deltaY = (Math.sin(((x - (fx.frame / 17) * Math.PI) / 180) * 5) * height) | 0;
-			const index = (bottom + deltaY) * paddedWidth + x;
+			const index = (bottom + deltaY) * heatWidth + x;
 			heatPrev[index] += 0.2;
 		}
 		/**/
@@ -192,7 +190,7 @@
 			const deltaBottom = (20 * Math.sin(((fx.frame / 7) * Math.PI) / 180)) | 0;
 			const height = 20 * Math.sin(((fx.frame / 5) * Math.PI) / 180);
 			const deltaY = (Math.sin(((x + (fx.frame / 23) * Math.PI) / 180) * 7) * height) | 0;
-			const index = (bottom + deltaBottom + deltaY) * paddedWidth + x;
+			const index = (bottom + deltaBottom + deltaY) * heatWidth + x;
 			heatPrev[index] += Math.random() < 0.5 ? 1.7 : -1.3;
 		}
 
@@ -200,7 +198,7 @@
 		for (let x = 0; x < heatWidth; x++) {
 			const height = 20 * Math.sin((fx.frame * Math.PI) / 180);
 			const deltaY = (Math.sin(((x - (fx.frame / 17) * Math.PI) / 180) * 5) * height) | 0;
-			const index = (bottom + deltaY) * paddedWidth + x;
+			const index = (bottom + deltaY) * heatWidth + x;
 			heatPrev[index] += Math.random() < 0.5 ? 1.7 : -1.3;
 		}
 		/**/
@@ -214,7 +212,7 @@
 
 		for (let y = bottomStart; y <= bottomEnd; y++) {
 			for (let x = 0; x < heatWidth; x++) {
-				const index = y * paddedWidth + x;
+				const index = y * heatWidth + x;
 				heatPrev[index] = Math.random() < 0.5 ? 1 : 0;
 			}
 		}
@@ -228,7 +226,7 @@
 
 		for (let y = bottomStart; y <= bottomEnd; y++) {
 			for (let x = 0; x < heatWidth; x++) {
-				const index = y * paddedWidth + x;
+				const index = y * heatWidth + x;
 				heatPrev[index] = Math.random();
 			}
 		}
@@ -255,7 +253,7 @@
 					: fx.width / 2 - mask.width / 2 + deltaX) | 0;
 
 			for (const { u, v } of mask.data) {
-				heatPrev[(y + v) * paddedWidth + (x + u)] += 0.03;
+				heatPrev[(y + v) * heatWidth + (x + u)] += 0.03;
 			}
 		}
 
@@ -263,7 +261,7 @@
 			let maxHeat = 0;
 
 			for (let x = 0; x < heatWidth; x++) {
-				const index = y * paddedWidth + x;
+				const index = y * heatWidth + x;
 				const heatValue = fireKernels[(fx as FxState<FxFire>).fireKernelIndex](x, y, heatPrev);
 				heatNext[index] = heatValue;
 
@@ -273,7 +271,7 @@
 			if (y < fx.height - 100 && maxHeat < minimalHeatThreshold) {
 				//console.log('break:', { y });
 				// Fill the rest of heatNext efficiently
-				heatNext.fill(minimalHeatThreshold, 0, (y - 1) * paddedWidth);
+				heatNext.fill(minimalHeatThreshold, 0, (y - 1) * heatWidth);
 				break;
 			}
 		}
@@ -287,12 +285,10 @@
 		colorUnder = colorBlack
 	) {
 		const data32 = new Uint32Array(imageData.data.buffer);
-		const paddedWidth = heatWidth;
-
 		let dst = 0; // index into imageData
 		let y = padTop;
 		while (y < heatHeight + padTop - 20) {
-			const rowStart = y * paddedWidth;
+			const rowStart = y * heatWidth;
 			for (let x = 0; x < heatWidth; x++) {
 				const heat = (heatArray[rowStart + x] * (palette.length - 1)) | 0;
 				data32[dst++] = heat >= palette.length ? colorOver : heat < 0 ? colorUnder : palette[heat];
@@ -301,7 +297,7 @@
 		}
 
 		let lastRow: number[] = [];
-		const rowStart = paddedWidth * y;
+		const rowStart = heatWidth * y;
 		for (let x = 0; x < heatWidth; x++) {
 			lastRow[x] = heatArray[rowStart + x];
 		}
@@ -402,7 +398,7 @@
 			const y = fx.mouseY | 0;
 			const value = heatNext[y * heatWidth + x];
 
-			const rowStart = y * paddedWidth;
+			const rowStart = y * heatWidth;
 			const paletteLength = fx.palettes[fx.paletteIndex].length;
 			const heat = (heatNext[rowStart + x] * (paletteLength - 1)) | 0;
 
