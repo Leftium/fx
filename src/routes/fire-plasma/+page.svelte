@@ -254,7 +254,12 @@
 					: fx.width / 2 - mask.width / 2 + deltaX) | 0;
 
 			for (const { u, v } of mask.data) {
-				heatPrev[(y + v) * heatWidth + (x + u)] += 0.03;
+				let index = (y + v) * heatWidth + (x + u);
+				heatPrev[index] = Math.max(heatPrev[index] + 0.02, 0.5);
+				index += heatWidth;
+				heatPrev[index] = Math.max(heatPrev[index], 0.5);
+				index += heatWidth;
+				heatPrev[index] = Math.max(heatPrev[index], 0.5);
 			}
 		}
 
@@ -269,7 +274,7 @@
 				maxHeat = Math.max(maxHeat, heatValue);
 			}
 
-			if (y < fx.height - 100 && maxHeat < minimalHeatThreshold) {
+			if (!(fx as FxState<FxFire>).text && y < fx.height - 100 && maxHeat < minimalHeatThreshold) {
 				//console.log('break:', { y });
 				// Fill the rest of heatNext efficiently
 				heatNext.fill(minimalHeatThreshold, 0, (y - 1) * heatWidth);
