@@ -353,7 +353,7 @@
 			fx.fireSeedIndex = 1;
 			fx.fireKernelIndex = 1;
 
-			fx.text = 'Leftium';
+			fx.text = 'LEFTIUM';
 		}}
 		onresize={(fx, width, height, isSameSize) => {
 			console.log('resizeHandler', { width, height });
