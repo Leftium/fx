@@ -2,7 +2,7 @@
 	import { textMask, type Mask } from '$lib/draw';
 	import { createOpaqueImageData, type FxState } from '$lib/fx-harness.svelte';
 	import GraphicalEffect from '$lib/GraphicalEffect.svelte';
-	import { makeColor, makeFirePalette, makeFirePalette2048, paletteGray } from '$lib/palette';
+	import { makeColor, makeFirePalette2048, paletteGray } from '$lib/palette';
 
 	type FxFire = {
 		fireSeedIndex: number;
@@ -41,8 +41,7 @@
 		withDescription(fireKernelNull, 'Null'),
 		withDescription(fireKernelDefault, 'Default'),
 		withDescription(fireKernelWide, 'Wide'),
-		withDescription(fireKernelSkinny, 'Skinny'),
-		withDescription(fireKernelTruncated, 'Truncated')
+		withDescription(fireKernelSkinny, 'Skinny')
 	];
 
 	let fireSeeds = [
@@ -98,7 +97,7 @@
 		total += getFire(heatPrev, x + 0, y + 4);
 		total += getFire(heatPrev, x + 1, y + 4);
 
-		return total / 12.02;
+		return total / 12.065;
 	}
 
 	// Kernel: compute next fire value at (x, y)
@@ -122,31 +121,7 @@
 		total += getFire(heatPrev, x + 0, y + 4);
 		total += getFire(heatPrev, x + 1, y + 4);
 
-		return total / 12.02;
-	}
-
-	// Kernel: compute next fire value at (x, y)
-	function fireKernelTruncated(x: number, y: number, heatPrev: Float32Array) {
-		let total = 0;
-
-		total += getFire(heatPrev, x + 0, y - 1);
-
-		total += getFire(heatPrev, x - 1, y + 0);
-		total += getFire(heatPrev, x + 0, y + 0) * 2;
-		total += getFire(heatPrev, x + 1, y + 0);
-
-		total += getFire(heatPrev, x + 0, y + 1);
-
-		total += getFire(heatPrev, x - 1, y + 2);
-		total += getFire(heatPrev, x + 1, y + 2);
-
-		total += getFire(heatPrev, x + 0, y + 3);
-
-		total += getFire(heatPrev, x - 1, y + 4);
-		total += getFire(heatPrev, x + 0, y + 4);
-		total += getFire(heatPrev, x + 1, y + 4);
-
-		return (((256 * total) / 12) | 0) / 256; // integer division
+		return total / 12.1;
 	}
 
 	// Fire Kernal from: https://github.com/Leftium/fire/blob/41a6144234a7837767454e9669f4a3a6423431f2/src/main.cpp#L89-L100
@@ -163,7 +138,7 @@
 			getFire(heatPrev, x + 1, y + 5) +
 			getFire(heatPrev, x + 0, y + 6);
 		//return sum / 8 - sum / 4096;
-		return sum / 8.02;
+		return sum / 8.075;
 	}
 
 	function seedFireNull() {
@@ -179,55 +154,55 @@
 		for (let y = bottomStart; y <= bottomEnd; y++) {
 			for (let x = padSides; x < heatWidth + padSides; x++) {
 				const index = y * paddedWidth + x;
-				heatPrev[index] = (Math.random() < 0.5 ? 505 : -145) / 256;
+				heatPrev[index] = Math.random() < 0.5 ? 5 : -4;
 			}
 		}
 	}
 
-	function seedFireSin(heatPrev: Float32Array<ArrayBuffer>, count = 0) {
+	function seedFireSin(heatPrev: Float32Array<ArrayBuffer>, fx: FxState) {
 		// Add heat to bottom rows (fuel source)
 
-		//if (count % 3 !== 0) return;
+		if (!fx) return;
 
 		const bottom = heatHeight + padTop - 40;
 		for (let x = padSides; x < heatWidth + padSides; x++) {
-			const deltaBottom = (20 * Math.sin(((count / 7) * Math.PI) / 180)) | 0;
-			const height = 20 * Math.sin(((count / 5) * Math.PI) / 180);
-			const deltaY = (Math.sin(((x + (count / 23) * Math.PI) / 180) * 7) * height) | 0;
+			const deltaBottom = (20 * Math.sin(((fx.frame / 7) * Math.PI) / 180)) | 0;
+			const height = 20 * Math.sin(((fx.frame / 5) * Math.PI) / 180);
+			const deltaY = (Math.sin(((x + (fx.frame / 23) * Math.PI) / 180) * 7) * height) | 0;
 			const index = (bottom + deltaBottom + deltaY) * paddedWidth + x;
-			heatPrev[index] += 0.22;
+			heatPrev[index] += 0.35;
 		}
 
 		// /*
 		for (let x = padSides; x < heatWidth + padSides; x++) {
-			const height = 20 * Math.sin((count * Math.PI) / 180);
-			const deltaY = (Math.sin(((x - (count / 17) * Math.PI) / 180) * 5) * height) | 0;
+			const height = 20 * Math.sin((fx.frame * Math.PI) / 180);
+			const deltaY = (Math.sin(((x - (fx.frame / 17) * Math.PI) / 180) * 5) * height) | 0;
 			const index = (bottom + deltaY) * paddedWidth + x;
-			heatPrev[index] += 0.22;
+			heatPrev[index] += 0.2;
 		}
 		/**/
 	}
 
-	function seedFireSinRandom(heatPrev: Float32Array<ArrayBuffer>, count = 0) {
+	function seedFireSinRandom(heatPrev: Float32Array<ArrayBuffer>, fx: FxState) {
 		// Add heat to bottom rows (fuel source)
 
-		//if (count % 3 !== 0) return;
+		if (!fx) return;
 
 		const bottom = heatHeight + padTop - 40;
 		for (let x = padSides; x < heatWidth + padSides; x++) {
-			const deltaBottom = (20 * Math.sin(((count / 7) * Math.PI) / 180)) | 0;
-			const height = 20 * Math.sin(((count / 5) * Math.PI) / 180);
-			const deltaY = (Math.sin(((x + (count / 23) * Math.PI) / 180) * 7) * height) | 0;
+			const deltaBottom = (20 * Math.sin(((fx.frame / 7) * Math.PI) / 180)) | 0;
+			const height = 20 * Math.sin(((fx.frame / 5) * Math.PI) / 180);
+			const deltaY = (Math.sin(((x + (fx.frame / 23) * Math.PI) / 180) * 7) * height) | 0;
 			const index = (bottom + deltaBottom + deltaY) * paddedWidth + x;
-			heatPrev[index] += (Math.random() < 0.5 ? 505 : -145) / 256 / 4;
+			heatPrev[index] += Math.random() < 0.5 ? 1.7 : -1.3;
 		}
 
 		// /*
 		for (let x = padSides; x < heatWidth + padSides; x++) {
-			const height = 20 * Math.sin((count * Math.PI) / 180);
-			const deltaY = (Math.sin(((x - (count / 17) * Math.PI) / 180) * 5) * height) | 0;
+			const height = 20 * Math.sin((fx.frame * Math.PI) / 180);
+			const deltaY = (Math.sin(((x - (fx.frame / 17) * Math.PI) / 180) * 5) * height) | 0;
 			const index = (bottom + deltaY) * paddedWidth + x;
-			heatPrev[index] += (Math.random() < 0.5 ? 505 : -145) / 256 / 4;
+			heatPrev[index] += Math.random() < 0.5 ? 1.7 : -1.3;
 		}
 		/**/
 	}
@@ -241,7 +216,7 @@
 		for (let y = bottomStart; y <= bottomEnd; y++) {
 			for (let x = padSides; x < heatWidth + padSides; x++) {
 				const index = y * paddedWidth + x;
-				heatPrev[index] = Math.random() < 0.73 ? 1 : 0;
+				heatPrev[index] = Math.random() < 0.5 ? 1 : 0;
 			}
 		}
 	}
@@ -255,7 +230,7 @@
 		for (let y = bottomStart; y <= bottomEnd; y++) {
 			for (let x = padSides; x < heatWidth + padSides; x++) {
 				const index = y * paddedWidth + x;
-				heatPrev[index] = (Math.random() * 2000 - 825) / 256;
+				heatPrev[index] = Math.random();
 			}
 		}
 	}
@@ -266,7 +241,7 @@
 
 		[heatPrev, heatNext] = [heatNext, heatPrev];
 
-		fireSeeds[(fx as FxState<FxFire>).fireSeedIndex](heatPrev, fx.frame);
+		fireSeeds[(fx as FxState<FxFire>).fireSeedIndex](heatPrev, fx);
 
 		if (mask) {
 			const deltaY = Math.cos((((fx.frame / 17) * Math.PI) / 180) * 13) * 30;
@@ -281,7 +256,7 @@
 					: fx.width / 2 - mask.width / 2 + deltaX) | 0;
 
 			for (const { u, v } of mask.data) {
-				heatPrev[(y + v) * paddedWidth + (x + u)] += 0.015;
+				heatPrev[(y + v) * paddedWidth + (x + u)] += 0.03;
 			}
 		}
 
@@ -344,16 +319,9 @@
 			//fx.paused = true;
 
 			fx.palettes.push(makeFirePalette2048());
-			fx.palettes.push(makeFirePalette());
-
 			fx.palettes.push(makeFirePalette2048({ extended: true }));
-			fx.palettes.push(makeFirePalette({ extended: true }));
-
 			fx.palettes.push(makeFirePalette2048({ blue: true }));
-			fx.palettes.push(makeFirePalette({ blue: true }));
-
 			fx.palettes.push(makeFirePalette2048({ extended: true, blue: true }));
-			fx.palettes.push(makeFirePalette({ extended: true, blue: true }));
 
 			fx.low = 140;
 			fx.high = 140;
@@ -367,12 +335,10 @@
 			console.log('resizeHandler', { width, height });
 			switch (fx.paletteIndex) {
 				case 1:
-				case 2:
-					minimalHeatThreshold = 140 / 256;
+					minimalHeatThreshold = 0.3;
 					break;
-				case 3:
-				case 4:
-					minimalHeatThreshold = 120 / 256;
+				case 2:
+					minimalHeatThreshold = 0.2;
 					break;
 				default:
 					minimalHeatThreshold = 0;
@@ -410,9 +376,18 @@
 		}}
 		oninfo={(fxBase, info) => {
 			const fx = fxBase as FxState<FxFire>;
+			const x = fx.mouseX | 0;
+			const y = fx.mouseY | 0;
+			const value = heatNext[y * heatWidth + x];
+
+			const rowStart = y * paddedWidth + padSides;
+			const paletteLength = fx.palettes[fx.paletteIndex].length;
+			const heat = (heatNext[rowStart + x] * (paletteLength - 1)) | 0;
+
 			return `${info}
 			Seed: ${fx.fireSeedIndex} ${fireSeeds[fx.fireSeedIndex].description}
-			Kernel: ${fx.fireKernelIndex} ${fireKernels[fx.fireKernelIndex].description}`;
+			Kernel: ${fx.fireKernelIndex} ${fireKernels[fx.fireKernelIndex].description}
+			[${x}, ${y}] heat: ${heat} value: ${value.toFixed(4)}`;
 		}}
 		onkeydown={(fxBase, event) => {
 			const fx = fxBase as FxState<FxFire>;

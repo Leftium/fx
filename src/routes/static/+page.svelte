@@ -3,7 +3,7 @@
 	import { createOpaqueImageData, type FxState } from '$lib/fx-harness.svelte';
 	import { generateNoiseUint8, renderNoisePalette } from '$lib/generateNoise';
 	import GraphicalEffect from '$lib/GraphicalEffect.svelte';
-	import { makeFirePalette, paletteCyan, makePaletteGraySlice } from '$lib/palette';
+	import { paletteCyan, makePaletteGraySlice } from '$lib/palette';
 
 	type FxStatic = {
 		text: string;
@@ -27,7 +27,6 @@
 
 			fx.palettes.push(makePaletteGraySlice(0, 255, 'Black & White'));
 			fx.palettes.push(paletteCyan);
-			fx.palettes.push(makeFirePalette({ extended: true }));
 
 			fx.text = 'SECRET';
 		}}
