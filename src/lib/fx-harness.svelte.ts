@@ -8,7 +8,7 @@ type FxRecord = Record<string, boolean | number | string | Palette[]>;
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type FxState<Extra extends FxRecord = {}> = {
 	paused: boolean;
-	infoHidden: boolean;
+	info: boolean;
 	active: boolean;
 	crtScanlines: boolean;
 	bgColor: string;
@@ -118,7 +118,7 @@ export function makeFxHarness(url: URL) {
 
 	const fx = $state<FxState>({
 		paused: false,
-		infoHidden: false,
+		info: false,
 		active: false,
 		crtScanlines: true,
 		bgColor: 'black',
@@ -207,7 +207,7 @@ export function makeFxHarness(url: URL) {
 				}
 
 				if (event.key === 'i') {
-					fx.infoHidden = !fx.infoHidden;
+					fx.info = !fx.info;
 				}
 
 				if (event.key === 's') {

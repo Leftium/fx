@@ -333,8 +333,8 @@
 			const fx = fxBase as FxState<FxFire>;
 
 			fx.standardSize = true;
-			//fx.standardWidth = 500;
-			fx.standardHeight = 800;
+			fx.standardWidth = 1000;
+			//fx.standardHeight = 800;
 			//fx.pixelAspectRatio = .5
 
 			fx.crtScanlines = false;
@@ -411,7 +411,7 @@
 			return `${info}
 			Seed: ${fx.fireSeedIndex} ${fireSeeds[fx.fireSeedIndex].description}
 			Kernel: ${fx.fireKernelIndex} ${fireKernels[fx.fireKernelIndex].description}
-			[${x}, ${y}] heat: ${heat} value: ${value.toFixed(4)}`;
+			<${x},${y}> heat:${heat} value:${value.toFixed(4)}`;
 		}}
 		onkeydown={(fxBase, event) => {
 			const fx = fxBase as FxState<FxFire>;

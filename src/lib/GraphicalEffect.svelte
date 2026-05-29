@@ -42,7 +42,7 @@
 	<wrap-effect>
 		<effect-background style:background-color={fx.bgColor}></effect-background>
 		<div class="crt-overlay" hidden={!fx.crtScanlines}></div>
-		<div class="info" hidden={fx.infoHidden}>
+		<div class="info" hidden={!fx.info}>
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html getInfoString().replaceAll('\n', '<br>')}
 		</div>

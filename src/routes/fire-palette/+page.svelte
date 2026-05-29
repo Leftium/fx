@@ -328,7 +328,7 @@
 			fx.standardHeight = 120;
 
 			fx.crtScanlines = false;
-			fx.infoHidden = true;
+			fx.info = true;
 			fx.scalingFactor = 1 / 2;
 
 			fx.paused = true;
