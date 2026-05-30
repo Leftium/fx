@@ -111,7 +111,9 @@ export function makeFirePalette(options: { blue?: boolean; extended?: boolean } 
 	if (options.blue) {
 		// Use blue channel to track fire intensity value.
 		palette = Object.assign(
-			palette.map((value, index) => value | ((((index / paletteLength) * 256) | 0) << 16)),
+			palette.map(
+				(value, index) => value | (255 << 24) | ((((index / paletteLength) * 256) | 0) << 16)
+			),
 			{ description: palette.description }
 		);
 	}
