@@ -45,7 +45,7 @@ export function makeFirePalette(options: { blue?: boolean; extended?: boolean } 
 		...options
 	};
 
-	const paletteLength = 256 + (options.extended ? 768 : 512);
+	const paletteLength = 256 + (options.extended ? 768 : 512 + 32);
 
 	let palette = Object.assign(new Uint32Array(paletteLength), {
 		description: `Fire${paletteLength} ${options.blue ? 'blue' : ''}`
