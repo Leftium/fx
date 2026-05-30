@@ -415,7 +415,7 @@
 			return `${info}
 			Seed: ${fx.fireSeedIndex} ${fireSeeds[fx.fireSeedIndex].description}
 			Kernel: ${fx.fireKernelIndex} ${fireKernels[fx.fireKernelIndex].description}
-			<${x},${y}> heat:${heat} value:${value.toFixed(4)}`;
+			<${x},${y}> heat:${heat} value:${value?.toFixed(4)}`;
 		}}
 		onkeydown={(fxBase, event) => {
 			const fx = fxBase as FxState<FxFire>;
