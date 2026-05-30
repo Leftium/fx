@@ -118,7 +118,7 @@ export function makeFxHarness(url: URL) {
 
 	const fx = $state<FxState>({
 		paused: false,
-		info: false,
+		info: true,
 		active: false,
 		crtScanlines: true,
 		bgColor: 'black',
