@@ -1,6 +1,10 @@
 export type Mask = {
 	width: number;
 	height: number;
+	minU: number;
+	minV: number;
+	maxU: number;
+	maxV: number;
 	data: { u: number; v: number }[];
 };
 
@@ -39,10 +43,19 @@ export function textMask(text: string, font = '70px sans-serif', fill = false): 
 
 	const data = [];
 
+	let minU = Number.MAX_SAFE_INTEGER;
+	let minV = Number.MAX_SAFE_INTEGER;
+	let maxU = 0;
+	let maxV = 0;
+
 	for (let v = 0; v < imgData.height; v++) {
 		for (let u = 0; u < imgData.width; u++) {
 			const alpha = imgData.data[(v * imgData.width + u) * 4 + 3];
 			if (alpha > 0) {
+				minU = Math.min(u, minU);
+				minV = Math.min(v, minV);
+				maxU = Math.max(u, maxU);
+				maxV = Math.max(v, maxV);
 				data.push({ u, v });
 			}
 		}
@@ -50,6 +63,10 @@ export function textMask(text: string, font = '70px sans-serif', fill = false): 
 	return {
 		width,
 		height,
+		minU,
+		minV,
+		maxU,
+		maxV,
 		data
 	};
 }
