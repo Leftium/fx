@@ -254,10 +254,11 @@
 					: fx.width / 2 - mask.width / 2 + deltaX) | 0;
 
 			for (const { u, v } of mask.data) {
+				const fracV = v / mask.maxV;
 				let index = (y + v) * heatWidth + (x + u);
-				heatPrev[index] = Math.max(heatPrev[index] + 0.02, 0.5);
-				index += heatWidth;
-				heatPrev[index] = Math.max(heatPrev[index], 0.5);
+
+				heatPrev[index] = Math.min(Math.max(heatPrev[index] + fracV * 0.0 + 0.02, 0.5), 0.8);
+
 				index += heatWidth;
 				heatPrev[index] = Math.max(heatPrev[index], 0.5);
 			}
