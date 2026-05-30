@@ -241,21 +241,22 @@
 
 		fireSeeds[(fx as FxState<FxFire>).fireSeedIndex](heatPrev, fx);
 
+		let my = heatHeight;
 		if (mask) {
 			const deltaY = Math.cos((((fx.frame / 17) * Math.PI) / 180) * 13) * 30;
 			const deltaX = Math.sin((((fx.frame / 23) * Math.PI) / 180) * 11) * 70;
-			const y =
-				(fx.active && fx.mouseY
-					? fx.mouseY - mask.height * 0.75
-					: heatHeight + padTop - 150 + deltaY) | 0;
-			const x =
+			const mx =
 				(fx.active && fx.mouseX
 					? fx.mouseX - mask.width / 2
 					: fx.width / 2 - mask.width / 2 + deltaX) | 0;
+			my =
+				(fx.active && fx.mouseY
+					? fx.mouseY - mask.height * 0.75
+					: heatHeight + padTop - 150 + deltaY) | 0;
 
 			for (const { u, v } of mask.data) {
 				const fracV = v / mask.maxV;
-				let index = (y + v) * heatWidth + (x + u);
+				let index = (my + v) * heatWidth + (mx + u);
 
 				heatPrev[index] = Math.min(Math.max(heatPrev[index] + fracV * 0.0 + 0.02, 0.5), 0.8);
 
@@ -264,6 +265,7 @@
 			}
 		}
 
+		const yThreshold = Math.min(fx.height - 50, my);
 		for (let y = heatHeight; y > 0; y--) {
 			let maxHeat = 0;
 
@@ -275,7 +277,7 @@
 				maxHeat = Math.max(maxHeat, heatValue);
 			}
 
-			if (!(fx as FxState<FxFire>).text && y < fx.height - 100 && maxHeat < minimalHeatThreshold) {
+			if (y < yThreshold && maxHeat < minimalHeatThreshold) {
 				//console.log('break:', { y });
 				// Fill the rest of heatNext efficiently
 				heatNext.fill(minimalHeatThreshold, 0, (y - 1) * heatWidth);
@@ -294,6 +296,7 @@
 		const data32 = new Uint32Array(imageData.data.buffer);
 		let dst = 0; // index into imageData
 		let y = padTop;
+
 		while (y < heatHeight + padTop - 20) {
 			const rowStart = y * heatWidth;
 			for (let x = 0; x < heatWidth; x++) {
