@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { createNoise2D } from 'simplex-noise';
+	import { fbm2D } from 'fractal-brownian-noise';
+
 	import { textMask, type Mask } from '$lib/draw';
 	import { createOpaqueImageData, type FxState } from '$lib/fx-harness.svelte';
 	import GraphicalEffect from '$lib/GraphicalEffect.svelte';
@@ -7,8 +10,11 @@
 	type FxFire = {
 		fireSeedIndex: number;
 		fireKernelIndex: number;
+		blendBottom: boolean;
 		text: string;
 	};
+
+	const noise2d = createNoise2D();
 
 	let imageData: ImageData;
 
@@ -44,6 +50,7 @@
 
 	let fireSeeds = [
 		withDescription(seedFireNull, 'Null'),
+		withDescription(seedFireFbm, 'Fbm'),
 		withDescription(seedFireDefault, 'Default'),
 		withDescription(seedFireClamped, 'Clamped'),
 		withDescription(seedFireRandom, 'Random'),
@@ -153,6 +160,37 @@
 			for (let x = 0; x < heatWidth; x++) {
 				const index = y * heatWidth + x;
 				heatPrev[index] = Math.random() < 0.5 ? 5 : -4;
+			}
+		}
+	}
+
+	function seedFireFbm(heatPrev: Float32Array<ArrayBuffer>, fx: FxState) {
+		if (!fx) return;
+
+		const bottom = fx.height;
+
+		for (let y = bottom - 3; y <= bottom; y++) {
+			for (let x = 0; x < fx.width; x++) {
+				const value = fbm2D(
+					x * 3,
+					y + fx.frame,
+					{
+						// Number of noise layers (default: 4)
+						octaves: 6,
+						// Frequency multiplier per octave (default: 2.0)
+						lacunarity: 3,
+						// Amplitude multiplier per octave (default: 0.5)
+						gain: 0.9,
+						// Initial amplitude (default: 1.0)
+						amplitude: 0.1,
+						// Initial frequency (default: 1.0)
+						frequency: 0.001
+					},
+					noise2d
+				);
+				heatPrev[y * fx.width + x] = value / 0.7245 + 0.5;
+				// fx.min = Math.min(value, fx.min);
+				// fx.max = Math.max(value, fx.max);
 			}
 		}
 	}
@@ -287,6 +325,7 @@
 	}
 
 	function renderFire(
+		fx: FxState<FxFire>,
 		heatArray: Float32Array,
 		imageData: ImageData,
 		palette = paletteGray,
@@ -297,7 +336,9 @@
 		let dst = 0; // index into imageData
 		let y = padTop;
 
-		while (y < heatHeight + padTop - 20) {
+		const blendHeight = fx.blendBottom ? 20 : 0;
+
+		while (y < heatHeight + padTop - blendHeight) {
 			const rowStart = y * heatWidth;
 			for (let x = 0; x < heatWidth; x++) {
 				const heat = (heatArray[rowStart + x] * (palette.length - 1)) | 0;
@@ -318,7 +359,7 @@
 					(value +
 						lastRow[(index + 1) % heatWidth] +
 						lastRow[(index - 1 + heatWidth) % heatWidth]) /
-					3.2
+					3.3
 				);
 			});
 			for (let x = 0; x < heatWidth; x++) {
@@ -358,6 +399,8 @@
 			fx.fireKernelIndex = 1;
 
 			fx.text = 'LEFTIUM';
+
+			fx.blendBottom = false;
 		}}
 		onresize={(fx, width, height, isSameSize) => {
 			console.log('resizeHandler', { width, height });
@@ -400,7 +443,14 @@
 					? [colorWhite, colorClear]
 					: [colorPurple, colorGreen];
 
-			return renderFire(heatNext, imageData, fx.palettes[fx.paletteIndex], colorOver, colorUnder);
+			return renderFire(
+				fx as FxState<FxFire>,
+				heatNext,
+				imageData,
+				fx.palettes[fx.paletteIndex],
+				colorOver,
+				colorUnder
+			);
 		}}
 		oninfo={(fxBase, info) => {
 			const fx = fxBase as FxState<FxFire>;
@@ -415,6 +465,7 @@
 			return `${info}
 			Seed: ${fx.fireSeedIndex} ${fireSeeds[fx.fireSeedIndex].description}
 			Kernel: ${fx.fireKernelIndex} ${fireKernels[fx.fireKernelIndex].description}
+			Blend Bottom: ${fx.blendBottom}
 			<${x},${y}> heat:${heat} value:${value?.toFixed(4)}`;
 		}}
 		onkeydown={(fxBase, event) => {
@@ -433,6 +484,10 @@
 
 			if (event.key === '[') {
 				fx.fireSeedIndex = (fx.fireSeedIndex - 1 + fireSeeds.length) % fireSeeds.length;
+			}
+
+			if (event.key === 'b') {
+				fx.blendBottom = !fx.blendBottom;
 			}
 		}}
 	></GraphicalEffect>
