@@ -35,6 +35,9 @@ importers:
       eslint-plugin-svelte:
         specifier: ^3.19.0
         version: 3.19.0(eslint@10.4.1)(svelte@5.56.1(@typescript-eslint/types@8.60.1))
+      fractal-brownian-noise:
+        specifier: ^1.0.1
+        version: 1.0.1(simplex-noise@4.0.3)
       globals:
         specifier: ^17.6.0
         version: 17.6.0
@@ -44,6 +47,9 @@ importers:
       prettier-plugin-svelte:
         specifier: ^4.1.0
         version: 4.1.0(prettier@3.8.3)(svelte@5.56.1(@typescript-eslint/types@8.60.1))
+      simplex-noise:
+        specifier: ^4.0.3
+        version: 4.0.3
       svelte:
         specifier: ^5.56.1
         version: 5.56.1(@typescript-eslint/types@8.60.1)
@@ -572,6 +578,12 @@ packages:
   flatted@3.4.2:
     resolution: {integrity: sha512-PjDse7RzhcPkIJwy5t7KPWQSZ9cAbzQXcafsetQoD7sOJRQlGikNbx7yZp2OotDnJyrDcbyRq3Ttb18iYOqkxA==}
 
+  fractal-brownian-noise@1.0.1:
+    resolution: {integrity: sha512-4f6xlBJ932zb2cZVEhDNg1WIfTAxoGIswuZTKwHYPVdp3hZ7TqwKE0HlV24veUu949+o+vr8xC6AxVN8/bQlYw==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      simplex-noise: ^4.0.3
+
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -859,6 +871,9 @@ packages:
   shebang-regex@3.0.0:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
+
+  simplex-noise@4.0.3:
+    resolution: {integrity: sha512-qSE2I4AngLQG7BXqoZj51jokT4WUXe8mOBrvfOXpci8+6Yu44+/dD5zqDpOx3Ux792eamTd2lLcI8jqFntk/lg==}
 
   sirv@3.0.2:
     resolution: {integrity: sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==}
@@ -1492,6 +1507,10 @@ snapshots:
 
   flatted@3.4.2: {}
 
+  fractal-brownian-noise@1.0.1(simplex-noise@4.0.3):
+    dependencies:
+      simplex-noise: 4.0.3
+
   fsevents@2.3.3:
     optional: true
 
@@ -1715,6 +1734,8 @@ snapshots:
       shebang-regex: 3.0.0
 
   shebang-regex@3.0.0: {}
+
+  simplex-noise@4.0.3: {}
 
   sirv@3.0.2:
     dependencies:
