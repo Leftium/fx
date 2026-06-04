@@ -8,8 +8,17 @@
 
 	type FxNoise = {
 		use3D: boolean;
+
+		octaves: number;
+		lacunarity: number;
+		gain: number;
+		ampltude: number;
+		frequency: number;
+
 		min: number;
 		max: number;
+
+		fbmOptions: FbmOptions;
 	};
 
 	let imageData: ImageData;
@@ -18,24 +27,11 @@
 	const noise2D = createNoise2D();
 	const noise3D = createNoise3D();
 
-	const fbmOptions: FbmOptions = {
-		// Number of noise layers (default: 4)
-		octaves: 6,
-		// Frequency multiplier per octave (default: 2.0)
-		lacunarity: 3,
-		// Amplitude multiplier per octave (default: 0.5)
-		gain: 0.9,
-		// Initial amplitude (default: 1.0)
-		amplitude: 0.1,
-		// Initial frequency (default: 1.0)
-		frequency: 0.001
-	};
+	const fractalNoise2D = (fx: FxState<FxNoise>, x: number, y: number) =>
+		fbm2D(x * 8, y + fx.frame * 2, fx.fbmOptions, noise2D);
 
-	const fractalNoise2D = (fx: FxState, x: number, y: number) =>
-		fbm2D(x * 8, y + fx.frame * 2, fbmOptions, noise2D);
-
-	const fractalNoise3D = (fx: FxState, x: number, y: number) =>
-		fbm3D(x * 8, y + fx.frame * 2, fx.frame * 2, fbmOptions, noise3D);
+	const fractalNoise3D = (fx: FxState<FxNoise>, x: number, y: number) =>
+		fbm3D(x * 8, y + fx.frame * 2, fx.frame * 2, fx.fbmOptions, noise3D);
 
 	function renderNoise(noise: Float32Array, imageData: ImageData, palette: Palette = paletteGray) {
 		// reinterpret the buffer as 32‑bit words
@@ -68,9 +64,30 @@
 			fx.min = Number.MAX_VALUE;
 			fx.max = 0;
 			fx.use3D = true;
+
+			// Number of noise layers
+			fx.octaves = 6;
+			// Frequency multiplier per octave
+			fx.lacunarity = 3;
+			// Amplitude multiplier per octave
+			fx.gain = 0.9;
+			// Initial amplitude
+			fx.ampltude = 0.1;
+			// Initial frequency
+			fx.frequency = 0.001;
 		}}
-		onresize={(fx, width, height) => {
-			console.log('resizeHandler', { width, height });
+		onresize={(fxBase, width, height) => {
+			const fx = fxBase as FxState<FxNoise>;
+			console.log('resizeHandler', { width, height }, fx.octaves);
+
+			fx.fbmOptions = {
+				octaves: fx.octaves,
+				lacunarity: fx.lacunarity,
+				gain: fx.gain,
+				amplitude: fx.ampltude,
+				frequency: fx.frequency
+			};
+
 			if (imageData && imageData.height === height && imageData.width === width) {
 				return;
 			}
@@ -80,6 +97,7 @@
 		}}
 		onupdate={(fxBase) => {
 			const fx = fxBase as FxState<FxNoise>;
+
 			for (let y = 0; y < fx.height; y++) {
 				for (let x = 0; x < fx.width; x++) {
 					const value = fx.use3D ? fractalNoise3D(fx, x, y) : fractalNoise2D(fx, x, y);

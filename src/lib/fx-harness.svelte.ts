@@ -2,8 +2,9 @@ import { untrack } from 'svelte';
 import type { Attachment } from 'svelte/attachments';
 import { makePaletteGraySlice, type Palette } from '$lib/palette';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
+import type { FbmOptions } from 'fractal-brownian-noise';
 
-type FxRecord = Record<string, boolean | number | string | Palette[]>;
+type FxRecord = Record<string, boolean | number | string | Palette[] | FbmOptions>;
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type FxState<Extra extends FxRecord = {}> = {

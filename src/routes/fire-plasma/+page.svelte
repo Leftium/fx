@@ -12,6 +12,14 @@
 		fireKernelIndex: number;
 		blendBottom: boolean;
 		text: string;
+
+		octaves: number;
+		lacunarity: number;
+		gain: number;
+		ampltude: number;
+		frequency: number;
+
+		fbmOptions: FbmOptions;
 	};
 
 	const noise2D = createNoise2D();
@@ -167,40 +175,27 @@
 		}
 	}
 
-	const fbmOptions: FbmOptions = {
-		// Number of noise layers (default: 4)
-		octaves: 6,
-		// Frequency multiplier per octave (default: 2.0)
-		lacunarity: 3,
-		// Amplitude multiplier per octave (default: 0.5)
-		gain: 0.9,
-		// Initial amplitude (default: 1.0)
-		amplitude: 0.1,
-		// Initial frequency (default: 1.0)
-		frequency: 0.001
-	};
-
-	function seedFireFbm2D(heatPrev: Float32Array<ArrayBuffer>, fx: FxState) {
+	function seedFireFbm2D(heatPrev: Float32Array<ArrayBuffer>, fx: FxState<FxFire>) {
 		if (!fx) return;
 
 		const bottom = fx.height;
 
 		for (let y = bottom - 3; y <= bottom; y++) {
 			for (let x = 0; x < fx.width; x++) {
-				const value = fbm2D(x * 3, y + fx.frame, fbmOptions, noise2D);
+				const value = fbm2D(x * 3, y + fx.frame, fx.fbmOptions, noise2D);
 				heatPrev[y * fx.width + x] = value / 0.7245 + 0.5;
 			}
 		}
 	}
 
-	function seedFireFbm3D(heatPrev: Float32Array<ArrayBuffer>, fx: FxState) {
+	function seedFireFbm3D(heatPrev: Float32Array<ArrayBuffer>, fx: FxState<FxFire>) {
 		if (!fx) return;
 
 		const bottom = fx.height;
 
 		for (let y = bottom - 3; y <= bottom; y++) {
 			for (let x = 0; x < fx.width; x++) {
-				const value = fbm3D(x * 8, y, fx.frame * 2, fbmOptions, noise3D);
+				const value = fbm3D(x * 8, y, fx.frame * 2, fx.fbmOptions, noise3D);
 				heatPrev[y * fx.width + x] = value / 0.8406 + 0.5;
 			}
 		}
@@ -288,7 +283,7 @@
 
 		[heatPrev, heatNext] = [heatNext, heatPrev];
 
-		fireSeeds[(fx as FxState<FxFire>).fireSeedIndex](heatPrev, fx);
+		fireSeeds[(fx as FxState<FxFire>).fireSeedIndex](heatPrev, fx as FxState<FxFire>);
 
 		let my = heatHeight;
 		if (mask) {
@@ -412,9 +407,30 @@
 			fx.text = 'LEFTIUM';
 
 			fx.blendBottom = false;
+
+			// Number of noise layers
+			fx.octaves = 6;
+			// Frequency multiplier per octave
+			fx.lacunarity = 3;
+			// Amplitude multiplier per octave
+			fx.gain = 0.9;
+			// Initial amplitude
+			fx.ampltude = 0.1;
+			// Initial frequency
+			fx.frequency = 0.001;
 		}}
-		onresize={(fx, width, height, isSameSize) => {
+		onresize={(fxBase, width, height, isSameSize) => {
+			const fx = fxBase as FxState<FxFire>;
 			console.log('resizeHandler', { width, height });
+
+			fx.fbmOptions = {
+				octaves: fx.octaves,
+				lacunarity: fx.lacunarity,
+				gain: fx.gain,
+				amplitude: fx.ampltude,
+				frequency: fx.frequency
+			};
+
 			switch (fx.paletteIndex) {
 				case 1:
 					minimalHeatThreshold = 0.3;
