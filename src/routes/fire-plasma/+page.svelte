@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { createNoise2D } from 'simplex-noise';
-	import { fbm2D } from 'fractal-brownian-noise';
+	import { createNoise2D, createNoise3D } from 'simplex-noise';
+	import { fbm2D, fbm3D, type FbmOptions } from 'fractal-brownian-noise';
 
 	import { textMask, type Mask } from '$lib/draw';
 	import { createOpaqueImageData, type FxState } from '$lib/fx-harness.svelte';
@@ -14,7 +14,8 @@
 		text: string;
 	};
 
-	const noise2d = createNoise2D();
+	const noise2D = createNoise2D();
+	const noise3D = createNoise3D();
 
 	let imageData: ImageData;
 
@@ -50,7 +51,9 @@
 
 	let fireSeeds = [
 		withDescription(seedFireNull, 'Null'),
-		withDescription(seedFireFbm, 'Fbm'),
+
+		withDescription(seedFireFbm2D, 'Fbm2D'),
+		withDescription(seedFireFbm3D, 'Fbm3D'),
 		withDescription(seedFireDefault, 'Default'),
 		withDescription(seedFireClamped, 'Clamped'),
 		withDescription(seedFireRandom, 'Random'),
@@ -164,33 +167,41 @@
 		}
 	}
 
-	function seedFireFbm(heatPrev: Float32Array<ArrayBuffer>, fx: FxState) {
+	const fbmOptions: FbmOptions = {
+		// Number of noise layers (default: 4)
+		octaves: 6,
+		// Frequency multiplier per octave (default: 2.0)
+		lacunarity: 3,
+		// Amplitude multiplier per octave (default: 0.5)
+		gain: 0.9,
+		// Initial amplitude (default: 1.0)
+		amplitude: 0.1,
+		// Initial frequency (default: 1.0)
+		frequency: 0.001
+	};
+
+	function seedFireFbm2D(heatPrev: Float32Array<ArrayBuffer>, fx: FxState) {
 		if (!fx) return;
 
 		const bottom = fx.height;
 
 		for (let y = bottom - 3; y <= bottom; y++) {
 			for (let x = 0; x < fx.width; x++) {
-				const value = fbm2D(
-					x * 3,
-					y + fx.frame,
-					{
-						// Number of noise layers (default: 4)
-						octaves: 6,
-						// Frequency multiplier per octave (default: 2.0)
-						lacunarity: 3,
-						// Amplitude multiplier per octave (default: 0.5)
-						gain: 0.9,
-						// Initial amplitude (default: 1.0)
-						amplitude: 0.1,
-						// Initial frequency (default: 1.0)
-						frequency: 0.001
-					},
-					noise2d
-				);
+				const value = fbm2D(x * 3, y + fx.frame, fbmOptions, noise2D);
 				heatPrev[y * fx.width + x] = value / 0.7245 + 0.5;
-				// fx.min = Math.min(value, fx.min);
-				// fx.max = Math.max(value, fx.max);
+			}
+		}
+	}
+
+	function seedFireFbm3D(heatPrev: Float32Array<ArrayBuffer>, fx: FxState) {
+		if (!fx) return;
+
+		const bottom = fx.height;
+
+		for (let y = bottom - 3; y <= bottom; y++) {
+			for (let x = 0; x < fx.width; x++) {
+				const value = fbm3D(x * 8, y, fx.frame * 2, fbmOptions, noise3D);
+				heatPrev[y * fx.width + x] = value / 0.8406 + 0.5;
 			}
 		}
 	}
@@ -378,8 +389,8 @@
 			const fx = fxBase as FxState<FxFire>;
 
 			fx.standardSize = true;
-			fx.standardWidth = 1000;
-			fx.standardHeight = 600;
+			//fx.standardWidth = 500;
+			//fx.standardHeight = 300;
 			//fx.pixelAspectRatio = .5
 
 			fx.crtScanlines = false;

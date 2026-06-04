@@ -1,12 +1,13 @@
 <script lang="ts">
-	import { createNoise2D } from 'simplex-noise';
-	import { fbm2D } from 'fractal-brownian-noise';
+	import { createNoise2D, createNoise3D } from 'simplex-noise';
+	import { fbm2D, fbm3D, type FbmOptions } from 'fractal-brownian-noise';
 
 	import { createOpaqueImageData, type FxState } from '$lib/fx-harness.svelte';
 	import GraphicalEffect from '$lib/GraphicalEffect.svelte';
 	import { type Palette, paletteGray, makeFirePalette } from '$lib/palette';
 
 	type FxNoise = {
+		use3D: boolean;
 		min: number;
 		max: number;
 	};
@@ -14,7 +15,27 @@
 	let imageData: ImageData;
 	let noise = new Float32Array(0);
 
-	const noise2d = createNoise2D();
+	const noise2D = createNoise2D();
+	const noise3D = createNoise3D();
+
+	const fbmOptions: FbmOptions = {
+		// Number of noise layers (default: 4)
+		octaves: 6,
+		// Frequency multiplier per octave (default: 2.0)
+		lacunarity: 3,
+		// Amplitude multiplier per octave (default: 0.5)
+		gain: 0.9,
+		// Initial amplitude (default: 1.0)
+		amplitude: 0.1,
+		// Initial frequency (default: 1.0)
+		frequency: 0.001
+	};
+
+	const fractalNoise2D = (fx: FxState, x: number, y: number) =>
+		fbm2D(x * 8, y + fx.frame * 2, fbmOptions, noise2D);
+
+	const fractalNoise3D = (fx: FxState, x: number, y: number) =>
+		fbm3D(x * 8, y + fx.frame * 2, fx.frame * 2, fbmOptions, noise3D);
 
 	function renderNoise(noise: Float32Array, imageData: ImageData, palette: Palette = paletteGray) {
 		// reinterpret the buffer as 32‑bit words
@@ -46,6 +67,7 @@
 
 			fx.min = Number.MAX_VALUE;
 			fx.max = 0;
+			fx.use3D = true;
 		}}
 		onresize={(fx, width, height) => {
 			console.log('resizeHandler', { width, height });
@@ -60,23 +82,7 @@
 			const fx = fxBase as FxState<FxNoise>;
 			for (let y = 0; y < fx.height; y++) {
 				for (let x = 0; x < fx.width; x++) {
-					const value = fbm2D(
-						x * 3,
-						y + fx.frame,
-						{
-							// Number of noise layers (default: 4)
-							octaves: 6,
-							// Frequency multiplier per octave (default: 2.0)
-							lacunarity: 3,
-							// Amplitude multiplier per octave (default: 0.5)
-							gain: 0.9,
-							// Initial amplitude (default: 1.0)
-							amplitude: 0.1,
-							// Initial frequency (default: 1.0)
-							frequency: 0.001
-						},
-						noise2d
-					);
+					const value = fx.use3D ? fractalNoise3D(fx, x, y) : fractalNoise2D(fx, x, y);
 					noise[y * fx.width + x] = value;
 					fx.min = Math.min(value, fx.min);
 					fx.max = Math.max(value, fx.max);
@@ -88,8 +94,16 @@
 			const fx = fxBase as FxState<FxNoise>;
 			return `${info}
 					frame: ${fxBase.frame}
+					3D: ${fx.use3D}
 					min: ${fx.min}
 					max: ${fx.max}`;
+		}}
+		onkeydown={(fxBase, event) => {
+			const fx = fxBase as FxState<FxNoise>;
+
+			if (event.key === 'd') {
+				fx.use3D = !fx.use3D;
+			}
 		}}
 	></GraphicalEffect>
 </main>
