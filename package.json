@@ -2,6 +2,7 @@
 	"name": "static",
 	"private": true,
 	"version": "0.0.1",
+	"packageManager": "pnpm@11.25.0",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
@@ -16,7 +17,7 @@
 	"devDependencies": {
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
-		"@sveltejs/adapter-auto": "^7.0.1",
+		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.63.1",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
 		"@types/node": "^25.9.2",
